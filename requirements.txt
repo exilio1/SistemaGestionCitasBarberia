@@ -1,0 +1,41 @@
+# ============================================================
+#  Sistema de Gestión Integral de Citas — Barbería
+#  Python 3.11+  |  Windows 10+
+# ============================================================
+
+# ── Interfaz gráfica ─────────────────────────────────────────
+customtkinter>=5.2.2          # GUI principal (RNF01)
+Pillow>=10.3.0                # Manejo de imágenes en la UI
+
+# ── Base de datos ────────────────────────────────────────────
+# SQLite3 viene incluido en Python — no requiere paquete extra
+
+# ── Seguridad ────────────────────────────────────────────────
+bcrypt>=4.1.3                 # Hash + salt de contraseñas (RNF07)
+
+# ── Bot de Telegram ──────────────────────────────────────────
+python-telegram-bot>=21.3     # RF01, RF08, RF09, RF12, RF13
+
+# ── Bot de WhatsApp (alternativa) ────────────────────────────
+# twilio>=9.0.0               # Descomentar si se usa Twilio para WhatsApp
+
+# ── Visualización de reportes ────────────────────────────────
+matplotlib>=3.8.4             # Gráficos de ocupación y rentabilidad (RF06)
+plotly>=5.22.0                # Gráficos interactivos opcionales
+
+# ── Exportación de reportes ──────────────────────────────────
+openpyxl>=3.1.4               # Exportar reportes a Excel (RF06)
+reportlab>=4.2.0              # Exportar reportes a PDF (RF06)
+
+# ── Programación de recordatorios ────────────────────────────
+APScheduler>=3.10.4           # Envío automático de recordatorios (RF13)
+
+# ── Variables de entorno ─────────────────────────────────────
+python-dotenv>=1.0.1          # Tokens del bot y configuración sensible
+
+# ── Peticiones HTTP ──────────────────────────────────────────
+requests>=2.32.2              # Llamadas a APIs REST (WhatsApp Business, etc.)
+
+# ── Testing ──────────────────────────────────────────────────
+pytest>=8.2.0
+pytest-asyncio>=0.23.7        # Tests asíncronos del bot

@@ -1,0 +1,40 @@
+# Python
+__pycache__/
+*.py[cod]
+
+# Entorno virtual
+venv/
+.venv/
+
+# Variables de entorno y secretos
+.env
+
+# Base de datos
+barberia.db
+data/barberia.db
+data/bot_queue.json
+
+# Respaldos generados en ejecucion
+data/backups/
+
+# Logs
+*.log
+
+# IDEs
+.vscode/
+.idea/
+
+# macOS
+.DS_Store
+
+# Windows
+Thumbs.db
+Desktop.ini
+
+# Configuracion local del editor
+.claude/
+
+# Conservar carpetas vacias
+!data/.gitkeep
+!data/backups/.gitkeep
+!assets/icons/.gitkeep
