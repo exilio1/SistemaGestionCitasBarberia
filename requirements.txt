@@ -38,4 +38,5 @@ requests>=2.32.2              # Llamadas a APIs REST (WhatsApp Business, etc.)
 
 # ── Testing ──────────────────────────────────────────────────
 pytest>=8.2.0
+pytest-cov>=5.0.0
 pytest-asyncio>=0.23.7        # Tests asíncronos del bot
