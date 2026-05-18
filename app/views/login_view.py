@@ -14,7 +14,6 @@ GOLD_HOVER  = "#A8841A"   # dorado mas oscuro para el hover
 BG          = "#0D0D0D"   # fondo general muy oscuro
 PANEL_IZQ   = "#111111"   # fondo del panel izquierdo
 PANEL_DER   = "#161616"   # fondo del panel derecho (ligeramente mas claro)
-CARD_BG     = "#1C1C1C"   # fondo de la caja de acceso rapido
 FIELD_BG    = "#1F1F1F"   # fondo de los campos de texto
 FIELD_BORDE = "#2A2A2A"   # borde de los campos
 TEXT_GRAY   = "#777777"   # texto secundario gris
@@ -192,40 +191,6 @@ class LoginView(ctk.CTkFrame):
         self._tt_pass = ToolTip(
             self.entry_pass, "Escribe tu contraseña para entrar al sistema."
         )
-
-        # Caja de acceso rápido por rol (referencia visual para demos)
-        caja_rapida = ctk.CTkFrame(
-            formulario, fg_color="#1A1A1A", corner_radius=8,
-            border_width=1, border_color="#2A2A2A",
-        )
-        caja_rapida.pack(fill="x", pady=(0, 20))
-
-        fila_titulo = ctk.CTkFrame(caja_rapida, fg_color="transparent")
-        fila_titulo.pack(fill="x", padx=14, pady=(10, 6))
-
-        ctk.CTkLabel(
-            fila_titulo, text="ACCESO RAPIDO POR ROL",
-            font=ctk.CTkFont(size=10, weight="bold"),
-            text_color=GOLD,
-        ).pack(side="left")
-
-        # Muestro los correos de prueba para admin y secretaria
-        for rol, correo in [("Admin:", "admin@barbers.com"), ("Recepcionista:", "recep@barbers.com")]:
-            fila = ctk.CTkFrame(caja_rapida, fg_color="transparent")
-            fila.pack(fill="x", padx=14, pady=1)
-            ctk.CTkLabel(
-                fila, text=rol, width=70,
-                font=ctk.CTkFont(size=12),
-                text_color=TEXT_GRAY, anchor="w",
-            ).pack(side="left")
-            ctk.CTkLabel(
-                fila, text=correo,
-                font=ctk.CTkFont(size=12, weight="bold"),
-                text_color="#3A8FD4",
-                fg_color="#1A2A3A", corner_radius=4,
-            ).pack(side="left", padx=6, pady=2, ipadx=8, ipady=2)
-
-        ctk.CTkFrame(caja_rapida, height=6, fg_color="transparent").pack()
 
         # Enlace para ir a la pantalla de registro
         pie = ctk.CTkFrame(formulario, fg_color="transparent")
