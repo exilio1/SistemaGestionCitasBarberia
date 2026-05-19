@@ -50,6 +50,7 @@ jobs:
           --windowed
           --onefile
           --collect-all customtkinter
+          --collect-submodules app
           --name BarberStudio
           app/main.py
 
