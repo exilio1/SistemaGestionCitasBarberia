@@ -23,6 +23,7 @@ modulos_ocultos = [
     'app.views.screens.pagos_view',
     'app.views.screens.factura_view',
     'app.views.screens.pago_barbero_view',
+    'app.views.screens.servicios_view',
     # Controladores
     'app.controllers.panel_principal_controller',
     'app.controllers.agenda_controller',
@@ -36,6 +37,7 @@ modulos_ocultos = [
     'app.controllers.pagos_controller',
     'app.controllers.factura_controller',
     'app.controllers.pago_barbero_controller',
+    'app.controllers.servicios_controller',
     'app.controllers.cliente_controller',
     'app.controllers.auth_controller',
     'app.controllers.registro_controller',

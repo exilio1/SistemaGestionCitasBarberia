@@ -47,6 +47,11 @@ PANTALLAS = {
         "app.controllers.ayuda_controller",          "AyudaController",
     ),
 
+    "Servicios": (
+        "app.views.screens.servicios_view",          "ServiciosView",
+        "app.controllers.servicios_controller",      "ServiciosController",
+    ),
+
     # ── Modulos secundarios (acceso interno, no aparecen en sidebar) ──────
     "Citas": (
         "app.views.screens.citas_view",              "CitasView",

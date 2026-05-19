@@ -26,6 +26,7 @@ MENUS_BASE = [
     ("Facturación",     "Facturacion"),
     ("Reportes",        "Reportes"),
     ("Equipo",          "Equipo"),
+    ("Servicios",       "Servicios"),
     ("Gastos",          "Gastos"),
 ]
 

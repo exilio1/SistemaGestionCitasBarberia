@@ -26,7 +26,7 @@ def login(email, password):
 PERMISOS = {
     "administrador": {
         "PanelPrincipal", "Agenda", "Facturacion",
-        "Reportes", "Equipo", "Gastos", "Ayuda", "Empleados", "Citas",
+        "Reportes", "Equipo", "Servicios", "Gastos", "Ayuda", "Empleados", "Citas",
     },
     "recepcionista": {
         "PanelPrincipal", "Agenda", "Facturacion", "Ayuda", "Citas",
