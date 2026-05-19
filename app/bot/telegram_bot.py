@@ -112,6 +112,9 @@ def main():
     # El ConversationHandler guía al usuario por estos pasos:
     # nombre → cédula → [confirmar cédula] → teléfono
     # → servicio → barbero → fecha → hora → confirmar
+    # allow_reentry=True permite reiniciar el flujo en cualquier momento.
+    # Sin esto, si el usuario queda atascado en un paso (por ejemplo en el
+    # calendario) y escribe /agendar de nuevo, el bot lo ignora completamente.
     conv_agendar = ConversationHandler(
         entry_points=[CommandHandler("agendar", agendar_start)],
         states={
@@ -127,10 +130,10 @@ def main():
         },
         fallbacks=[CommandHandler("salir", salir_flujo)],
         per_message=False,
+        allow_reentry=True,
     )
 
     # ── Flujo /cancelar (1 paso) ──────────────────────────────────────────────
-    # Solo pide el código de la cita y la cancela
     conv_cancelar = ConversationHandler(
         entry_points=[CommandHandler("cancelar", cancelar_start)],
         states={
@@ -139,10 +142,10 @@ def main():
             ],
         },
         fallbacks=[CommandHandler("salir", salir_flujo)],
+        allow_reentry=True,
     )
 
     # ── Flujo /reprogramar (3 pasos) ─────────────────────────────────────────
-    # Pide el código, luego la nueva fecha, luego la nueva hora
     conv_reprogramar = ConversationHandler(
         entry_points=[CommandHandler("reprogramar", reprogramar_start)],
         per_message=False,
@@ -154,10 +157,10 @@ def main():
             HORA_REPROG: [CallbackQueryHandler(hora_reprog_recibida)],
         },
         fallbacks=[CommandHandler("salir", salir_flujo)],
+        allow_reentry=True,
     )
 
     # ── Flujo /micita (1 paso) ────────────────────────────────────────────────
-    # Solo pide el código y muestra el estado de la cita
     conv_micita = ConversationHandler(
         entry_points=[CommandHandler("micita", micita_start)],
         states={
@@ -166,6 +169,7 @@ def main():
             ],
         },
         fallbacks=[CommandHandler("salir", salir_flujo)],
+        allow_reentry=True,
     )
 
     # Registro todos los handlers en la aplicación del bot
