@@ -105,7 +105,7 @@ def main():
         print()
         return
 
-    # Creo la aplicación del bot con el token de Telegram
+    # Creo la aplicación del bot y registro los comandos del menu de Telegram
     app = Application.builder().token(token).build()
 
     # ── Flujo /agendar (9 pasos) ─────────────────────────────────────────────
@@ -121,7 +121,7 @@ def main():
             TELEFONO:         [MessageHandler(filters.TEXT & ~filters.COMMAND, telefono_recibido)],
             SERVICIO:         [CallbackQueryHandler(servicio_recibido)],
             BARBERO:          [CallbackQueryHandler(barbero_recibido)],
-            FECHA:            [MessageHandler(filters.TEXT & ~filters.COMMAND, fecha_recibida)],
+            FECHA:            [CallbackQueryHandler(fecha_recibida)],
             HORA:             [CallbackQueryHandler(hora_recibida)],
             CONFIRMAR:        [CallbackQueryHandler(confirmar_cita)],
         },
@@ -150,9 +150,7 @@ def main():
             CODIGO_REPROG: [
                 MessageHandler(filters.TEXT & ~filters.COMMAND, codigo_reprog_recibido)
             ],
-            FECHA_REPROG: [
-                MessageHandler(filters.TEXT & ~filters.COMMAND, fecha_reprog_recibida)
-            ],
+            FECHA_REPROG: [CallbackQueryHandler(fecha_reprog_recibida)],
             HORA_REPROG: [CallbackQueryHandler(hora_reprog_recibida)],
         },
         fallbacks=[CommandHandler("salir", salir_flujo)],
@@ -176,6 +174,21 @@ def main():
     app.add_handler(conv_cancelar)
     app.add_handler(conv_reprogramar)
     app.add_handler(conv_micita)
+
+    # Registro los comandos del menu de Telegram (aparecen al tocar el icono "/" en el chat)
+    # Esto hace que el boton de menu siempre este disponible para el cliente
+    async def _registrar_comandos(app):
+        from telegram import BotCommand
+        await app.bot.set_my_commands([
+            BotCommand("start",        "Inicio — ver todos los comandos"),
+            BotCommand("agendar",      "Reservar una nueva cita"),
+            BotCommand("cancelar",     "Cancelar tu cita"),
+            BotCommand("reprogramar",  "Cambiar la fecha u hora de tu cita"),
+            BotCommand("micita",       "Consultar el estado de tu cita"),
+            BotCommand("salir",        "Cancelar la operacion actual"),
+        ])
+
+    app.post_init = _registrar_comandos
 
     # Arranco el bot en modo polling (se queda escuchando mensajes)
     print()
