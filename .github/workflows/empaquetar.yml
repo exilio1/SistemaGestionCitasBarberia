@@ -62,7 +62,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      # ── macOS: genera un .app dentro de una carpeta y lo comprime en zip ─
+      # ── macOS: genera un .app, lo firma localmente y lo empaqueta con un launcher ─
       - name: empaquetar para macos
         if: matrix.plataforma == 'macos'
         run: >
@@ -74,9 +74,26 @@ jobs:
           --name BarberStudio
           app/main.py
 
-      - name: comprimir la app de macos en zip
+      # firma local para que macOS no lo bloquee directamente
+      - name: firmar la app con firma local
         if: matrix.plataforma == 'macos'
-        run: cd dist && zip -r BarberStudio-macOS.zip BarberStudio.app
+        run: codesign --force --deep --sign - dist/BarberStudio.app
+
+      # script de apertura para que el profesor solo haga doble clic
+      - name: crear script de apertura para macos
+        if: matrix.plataforma == 'macos'
+        run: |
+          cat > dist/Abrir_BarberStudio.command << 'SCRIPT'
+          #!/bin/bash
+          DIR="$(cd "$(dirname "$0")" && pwd)"
+          xattr -cr "$DIR/BarberStudio.app"
+          open "$DIR/BarberStudio.app"
+          SCRIPT
+          chmod +x dist/Abrir_BarberStudio.command
+
+      - name: comprimir app y launcher en zip
+        if: matrix.plataforma == 'macos'
+        run: cd dist && zip -r BarberStudio-macOS.zip BarberStudio.app Abrir_BarberStudio.command
 
       - name: subir zip macos al release
         if: matrix.plataforma == 'macos'
