@@ -29,22 +29,29 @@ def _correr_solo_bot():
 
 def _lanzar_proceso_bot():
     """
-    Lanza el bot como proceso independiente usando el mismo ejecutable
-    con el argumento --bot-only. Asi cada proceso tiene su propio
-    event loop de asyncio y no hay conflictos con la interfaz grafica.
+    Lanza el bot como proceso independiente para que tenga su propio
+    event loop de asyncio sin conflictos con la interfaz grafica.
+
+    - App empaquetada con PyInstaller: ejecuta el mismo binario con --bot-only
+    - Modo desarrollo (python -m app.main): ejecuta el modulo del bot directamente
     """
     try:
-        # Heredamos todas las variables de entorno del proceso principal
-        # para que el bot tenga acceso al token de Telegram
         entorno = os.environ.copy()
+
+        if getattr(sys, 'frozen', False):
+            # Ejecutable empaquetado — el binario sabe manejar --bot-only
+            cmd = [sys.executable, '--bot-only']
+        else:
+            # Modo desarrollo — lanzamos el modulo del bot como subproceso de Python
+            cmd = [sys.executable, '-m', 'app.bot.telegram_bot']
+
         subprocess.Popen(
-            [sys.executable, '--bot-only'],
+            cmd,
             env=entorno,
             stdout=subprocess.DEVNULL,
             stderr=subprocess.DEVNULL,
         )
     except Exception:
-        # Si el bot no puede iniciar la app sigue funcionando normal
         pass
 
 
