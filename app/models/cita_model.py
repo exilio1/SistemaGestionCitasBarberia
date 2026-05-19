@@ -6,13 +6,14 @@ from app.config import HORARIO_INICIO, HORARIO_FIN
 
 class CitaModel:
 
-    def crear(self, cliente_id, empleado_id, servicio_id, fecha, hora, observaciones=None):
+    def crear(self, cliente_id, empleado_id, servicio_id, fecha, hora, observaciones=None, estado="pendiente"):
         # Generar codigo unico de 8 caracteres
         codigo = str(uuid.uuid4())[:8].upper()
         conn = get_connection()
         conn.execute(
-            "INSERT INTO citas (cliente_id, empleado_id, servicio_id, fecha, hora, estado, observaciones, codigo) VALUES (?, ?, ?, ?, ?, 'pendiente', ?, ?)",
-            (cliente_id, empleado_id, servicio_id, fecha, hora, observaciones, codigo)
+            "INSERT INTO citas (cliente_id, empleado_id, servicio_id, fecha, hora, estado, observaciones, codigo) "
+            "VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
+            (cliente_id, empleado_id, servicio_id, fecha, hora, estado, observaciones, codigo)
         )
         conn.commit()
         conn.close()

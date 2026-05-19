@@ -6,8 +6,9 @@ Boton '+ NUEVA CITA' abre el modal de registro.
 
 import calendar
 import customtkinter as ctk
-from datetime import date, datetime
+from datetime import date, datetime, timedelta
 from app.views.components.tooltip import ToolTip
+from app.config import HORARIO_INICIO, HORARIO_FIN
 
 # ── Colores ───────────────────────────────────────────────────────────────────
 GOLD        = "#C9A020"
@@ -359,7 +360,14 @@ class AgendaView(ctk.CTkFrame):
                      text_color=TEXT_G).pack(pady=(0, 6))
 
         # ── Filas de horas (9:00 AM a 5:00 PM) ───────────────────────────
-        horas = [f"{h:02d}:00" for h in range(9, 18)]
+        # Genero los slots de 30 min usando el horario real de la barberia
+        _inicio = datetime.strptime(HORARIO_INICIO, "%H:%M")
+        _fin    = datetime.strptime(HORARIO_FIN,    "%H:%M")
+        horas   = []
+        _h = _inicio
+        while _h < _fin:
+            horas.append(_h.strftime("%H:%M"))
+            _h += timedelta(minutes=30)
 
         # Organizo las citas en un diccionario (empleado_id, hora) -> cita
         # para buscarlas rapido al dibujar cada celda

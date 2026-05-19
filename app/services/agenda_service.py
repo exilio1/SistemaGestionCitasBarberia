@@ -57,7 +57,7 @@ def primer_barbero_libre(fecha, hora):
     return None, None
 
 
-def agendar_cita(nombre, cedula, telefono, servicio_id, fecha, hora, empleado_id=None):
+def agendar_cita(nombre, cedula, telefono, servicio_id, fecha, hora, empleado_id=None, confirmar=False):
     cliente_id = modelo_cliente.obtener_o_crear(nombre, cedula, telefono)
 
     if not empleado_id:
@@ -73,7 +73,10 @@ def agendar_cita(nombre, cedula, telefono, servicio_id, fecha, hora, empleado_id
             sugerencias = "ninguna"
         return None, f"Esa hora ya fue tomada. Opciones: {sugerencias}"
 
-    codigo = modelo_cita.crear(cliente_id, empleado_id, servicio_id, fecha, hora)
+    # Las citas del chatbot se crean directamente como confirmadas porque el
+    # cliente ya paso por el flujo completo de confirmacion en Telegram
+    estado = "confirmada" if confirmar else "pendiente"
+    codigo = modelo_cita.crear(cliente_id, empleado_id, servicio_id, fecha, hora, estado=estado)
     return codigo, None
 
 

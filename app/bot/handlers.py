@@ -462,6 +462,7 @@ async def confirmar_cita(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
         fecha=d["fecha"],
         hora=d["hora"],
         empleado_id=d.get("empleado_id"),
+        confirmar=True,   # el cliente ya confirmo en el chat, no necesita aprobacion manual
     )
 
     if error:
