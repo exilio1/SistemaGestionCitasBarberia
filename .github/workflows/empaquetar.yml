@@ -94,7 +94,19 @@ jobs:
           #!/bin/bash
           DIR="$(cd "$(dirname "$0")" && pwd)"
           xattr -cr "$DIR/BarberStudio.app"
-          open "$DIR/BarberStudio.app"
+
+          # Exportamos las variables del .env para que la app las herede
+          if [ -f "$DIR/.env" ]; then
+            while IFS= read -r linea; do
+              [[ "$linea" =~ ^#.*$ || -z "$linea" ]] && continue
+              export "$linea"
+              launchctl setenv "${linea%%=*}" "${linea#*=}" 2>/dev/null
+            done < "$DIR/.env"
+          fi
+
+          # Ejecutamos el binario directamente para que herede las variables
+          "$DIR/BarberStudio.app/Contents/MacOS/BarberStudio" &
+          disown $!
           SCRIPT
           chmod +x dist/Abrir_BarberStudio.command
 

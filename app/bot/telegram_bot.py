@@ -9,8 +9,33 @@ Las citas que el bot crea aparecen automáticamente en la Agenda del sistema.
 """
 
 import os
+import sys
 import logging
 from dotenv import load_dotenv
+
+
+def _cargar_env():
+    """
+    Busca el archivo .env en la ubicacion correcta segun si es app empaquetada
+    con PyInstaller o codigo fuente corriendo en desarrollo.
+    """
+    if getattr(sys, 'frozen', False):
+        # App empaquetada — el ejecutable esta dentro del .app o carpeta dist
+        exe = sys.executable
+        if sys.platform == 'darwin':
+            # Estructura: BarberStudio.app/Contents/MacOS/BarberStudio
+            # El .env esta junto al .app, tres niveles arriba del ejecutable
+            app_bundle = os.path.dirname(os.path.dirname(os.path.dirname(exe)))
+            env_path = os.path.join(os.path.dirname(app_bundle), '.env')
+        else:
+            # Windows: BarberStudio/BarberStudio.exe
+            # El .env esta en la misma carpeta que el .exe
+            env_path = os.path.join(os.path.dirname(exe), '.env')
+        if os.path.exists(env_path):
+            load_dotenv(env_path)
+            return
+    # Modo desarrollo — busca el .env en el directorio actual
+    load_dotenv()
 
 # Importo los manejadores de eventos de la librería python-telegram-bot
 from telegram.ext import (
@@ -66,8 +91,8 @@ logger = logging.getLogger(__name__)
 
 
 def main():
-    # Cargo las variables de entorno desde el archivo .env
-    load_dotenv()
+    # Cargo las variables de entorno desde el .env (busca en la ubicacion correcta)
+    _cargar_env()
     token = os.getenv("TELEGRAM_BOT_TOKEN")
 
     # Verifico que el token esté configurado correctamente
