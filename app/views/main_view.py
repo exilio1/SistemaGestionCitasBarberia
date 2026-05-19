@@ -13,8 +13,8 @@ class MainView(ctk.CTk):
         super().__init__()
         # Configuro la ventana raiz con titulo, tamaño y minimo
         self.title("Gestión Barbería")
-        self.geometry("1150x720")
-        self.minsize(900, 600)
+        self.geometry("1200x780")
+        self.minsize(1000, 750)
         # Guarda referencia al frame actual para poder destruirlo al cambiar de pantalla
         self._current_frame: ctk.CTkFrame | None = None
         # La primera pantalla siempre es el login
