@@ -1,6 +1,6 @@
 # este workflow empaqueta la app para Windows y macOS usando PyInstaller
 # se ejecuta manualmente desde la pestaña Actions de GitHub
-# al terminar sube los ejecutables directamente al release v1.0.0
+# al terminar sube los ejecutables directamente al release indicado
 
 name: empaquetar ejecutables
 
@@ -41,45 +41,25 @@ jobs:
       - name: instalar las librerias necesarias para empaquetar
         run: pip install customtkinter Pillow bcrypt python-dotenv pyinstaller
 
-      # ── Windows: genera un solo .exe ──────────────────────────────────────
-      - name: empaquetar para windows
-        if: matrix.plataforma == 'windows'
-        run: >
-          pyinstaller
-          --windowed
-          --onefile
-          --collect-all customtkinter
-          --collect-submodules app
-          --name BarberStudio
-          app/main.py
+      # usa el archivo .spec que tiene todos los modulos dinamicos listados explicitamente
+      - name: empaquetar con pyinstaller usando el archivo spec
+        run: pyinstaller barber_studio.spec
 
+      # ── Windows: sube el .exe del release ────────────────────────────────
       - name: subir ejecutable windows al release
         if: matrix.plataforma == 'windows'
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ github.event.inputs.tag }}
-          files: dist/BarberStudio.exe
+          files: dist/BarberStudio/BarberStudio.exe
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      # ── macOS: genera un .app, lo firma localmente y lo empaqueta con un launcher ─
-      - name: empaquetar para macos
-        if: matrix.plataforma == 'macos'
-        run: >
-          pyinstaller
-          --windowed
-          --onedir
-          --collect-all customtkinter
-          --collect-submodules app
-          --name BarberStudio
-          app/main.py
-
-      # firma local para que macOS no lo bloquee directamente
-      - name: firmar la app con firma local
+      # ── macOS: firma, crea launcher y comprime en zip ─────────────────────
+      - name: firmar la app con firma local para macos
         if: matrix.plataforma == 'macos'
         run: codesign --force --deep --sign - dist/BarberStudio.app
 
-      # script de apertura para que el profesor solo haga doble clic
       - name: crear script de apertura para macos
         if: matrix.plataforma == 'macos'
         run: |
