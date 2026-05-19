@@ -41,21 +41,48 @@ jobs:
       - name: instalar las librerias necesarias para empaquetar
         run: pip install customtkinter Pillow bcrypt python-dotenv pyinstaller
 
+      # crea el archivo .env con el token del bot para que funcione al descargar
+      - name: crear el archivo .env con la configuracion del bot
+        shell: bash
+        run: |
+          cat > .env << EOF
+          APP_NAME=Sistema de Gestion Integral de Citas
+          APP_ENV=production
+          DB_PATH=data/barberia.db
+          BACKUP_DIR=data/backups
+          HORARIO_INICIO=08:00
+          HORARIO_FIN=19:00
+          PORCENTAJE_EMPLEADO=60
+          PORCENTAJE_NEGOCIO=40
+          BOT_PROVIDER=telegram
+          TELEGRAM_BOT_TOKEN=${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_ENABLED=true
+          BCRYPT_ROUNDS=12
+          MAX_RESPONSE_TIME=2
+          EOF
+
       # usa el archivo .spec que tiene todos los modulos dinamicos listados explicitamente
       - name: empaquetar con pyinstaller usando el archivo spec
         run: pyinstaller barber_studio.spec
 
-      # ── Windows: sube el .exe del release ────────────────────────────────
-      - name: subir ejecutable windows al release
+      # ── Windows: crea zip con el ejecutable y el .env ─────────────────────
+      - name: comprimir ejecutable y configuracion para windows
+        if: matrix.plataforma == 'windows'
+        shell: bash
+        run: |
+          cp .env dist/BarberStudio/.env
+          cd dist && powershell Compress-Archive -Path BarberStudio -DestinationPath BarberStudio-Windows.zip || zip -r BarberStudio-Windows.zip BarberStudio
+
+      - name: subir zip windows al release
         if: matrix.plataforma == 'windows'
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ github.event.inputs.tag }}
-          files: dist/BarberStudio/BarberStudio.exe
+          files: dist/BarberStudio-Windows.zip
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      # ── macOS: firma, crea launcher y comprime en zip ─────────────────────
+      # ── macOS: firma, crea launcher, incluye .env y comprime ─────────────
       - name: firmar la app con firma local para macos
         if: matrix.plataforma == 'macos'
         run: codesign --force --deep --sign - dist/BarberStudio.app
@@ -71,9 +98,11 @@ jobs:
           SCRIPT
           chmod +x dist/Abrir_BarberStudio.command
 
-      - name: comprimir app y launcher en zip
+      - name: comprimir app launcher y configuracion en zip
         if: matrix.plataforma == 'macos'
-        run: cd dist && zip -r BarberStudio-macOS.zip BarberStudio.app Abrir_BarberStudio.command
+        run: |
+          cp .env dist/.env
+          cd dist && zip -r BarberStudio-macOS.zip BarberStudio.app Abrir_BarberStudio.command .env
 
       - name: subir zip macos al release
         if: matrix.plataforma == 'macos'
