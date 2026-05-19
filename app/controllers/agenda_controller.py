@@ -18,6 +18,11 @@ class AgendaController:
         self._view.btn_buscar.configure(command=self._buscar)
         self._view.btn_nueva_cita.configure(command=self._abrir_modal)
 
+        # Conecto los callbacks del popup de detalle de cita para que
+        # la recepcionista pueda confirmar o iniciar desde la agenda
+        self._view._on_confirmar = self._confirmar_desde_agenda
+        self._view._on_iniciar   = self._iniciar_desde_agenda
+
         # Cargo el día actual automáticamente al abrir la pantalla
         self._buscar()
 
@@ -52,6 +57,23 @@ class AgendaController:
 
         # Le paso los datos a la vista para que dibuje la grilla
         self._view.cargar_agenda(empleados, citas)
+
+    # ── Confirmar cita desde el popup de la agenda ───────────────────────────
+
+    def _confirmar_desde_agenda(self, codigo: str):
+        """Confirma una cita pendiente al hacer clic en su celda de la agenda."""
+        if self._modelo_cita.confirmar(codigo):
+            messagebox.showinfo("Cita confirmada", f"Cita {codigo} confirmada correctamente.")
+        else:
+            messagebox.showerror("Error", f"No se pudo confirmar la cita {codigo}.")
+        # Recargo la agenda para que la celda cambie de color a CONFIRMADA
+        self._buscar()
+
+    def _iniciar_desde_agenda(self, codigo: str):
+        """Pone en curso una cita al hacer clic en su celda de la agenda."""
+        self._modelo_cita.actualizar_estado(codigo, "en_curso")
+        messagebox.showinfo("Servicio iniciado", f"Cita {codigo} marcada como en servicio.")
+        self._buscar()
 
     # ── Abrir modal de nueva cita ─────────────────────────────────────────────
 

@@ -16,9 +16,12 @@ GOLD_HOVER  = "#A8841A"
 BG          = "#111111"
 CARD        = "#1A1A1A"
 CARD2       = "#1F1F1F"
-HEADER_COL  = "#161616"   # fondo de las cabeceras de columna
+HEADER_COL  = "#161616"
 TEXT_W      = "#F0F0F0"
 TEXT_G      = "#777777"
+AZUL        = "#2980B9"
+AZUL_HOVER  = "#1A6A9A"
+ROJO        = "#C0392B"
 
 # Colores por estado — cada estado tiene su propio fondo y color de texto
 COLOR_ESTADO = {
@@ -163,11 +166,102 @@ class CalendarioPopup(ctk.CTkToplevel):
         self.destroy()
 
 
+class PopupDetalleCita(ctk.CTkToplevel):
+    """
+    Ventana emergente que muestra el detalle completo de una cita al hacer clic
+    sobre su celda en la agenda. Si la cita esta pendiente, ofrece un boton para
+    confirmarla directamente sin tener que ir a Gestionar Citas.
+    """
+
+    def __init__(self, parent, cita: dict, on_confirmar=None, on_iniciar=None):
+        super().__init__(parent)
+        self.title("Detalle de cita")
+        self.geometry("400x430")
+        self.resizable(False, False)
+        self.configure(fg_color=CARD)
+        self.transient(parent.winfo_toplevel())
+        self.grab_set()
+
+        estado = cita.get("estado", "pendiente")
+        bg_estado, color_estado, label_estado = COLOR_ESTADO.get(
+            estado, ("#1E1E1E", "#888888", estado.upper())
+        )
+
+        # ── Banda de color con el estado ──────────────────────────────────
+        banda = ctk.CTkFrame(self, fg_color=bg_estado, corner_radius=0, height=44)
+        banda.pack(fill="x")
+        banda.pack_propagate(False)
+        ctk.CTkLabel(
+            banda, text=label_estado,
+            font=ctk.CTkFont(size=13, weight="bold"),
+            text_color=color_estado,
+        ).pack(expand=True)
+
+        # ── Datos de la cita ──────────────────────────────────────────────
+        contenido = ctk.CTkFrame(self, fg_color="transparent")
+        contenido.pack(fill="both", expand=True, padx=24, pady=12)
+
+        def _fila(etiqueta, valor):
+            f = ctk.CTkFrame(contenido, fg_color="transparent")
+            f.pack(fill="x", pady=3)
+            ctk.CTkLabel(
+                f, text=f"{etiqueta}:",
+                font=ctk.CTkFont(size=11), text_color=TEXT_G,
+                width=88, anchor="w",
+            ).pack(side="left")
+            ctk.CTkLabel(
+                f, text=str(valor) if valor else "—",
+                font=ctk.CTkFont(size=12, weight="bold"), text_color=TEXT_W,
+                anchor="w",
+            ).pack(side="left")
+
+        _fila("Codigo",   cita.get("codigo", ""))
+        _fila("Cliente",  cita.get("cliente_nombre") or cita.get("nombre", ""))
+        _fila("Cedula",   cita.get("cliente_cedula") or cita.get("cedula", ""))
+        _fila("Telefono", cita.get("cliente_telefono") or cita.get("telefono", ""))
+        _fila("Servicio", cita.get("servicio", ""))
+        _fila("Barbero",  cita.get("empleado_nombre", ""))
+        _fila("Fecha",    cita.get("fecha", ""))
+        _fila("Hora",     str(cita.get("hora", ""))[:5])
+
+        # ── Botones de accion segun el estado ─────────────────────────────
+        btns = ctk.CTkFrame(self, fg_color="transparent")
+        btns.pack(fill="x", padx=24, pady=(0, 16))
+
+        if estado == "pendiente" and on_confirmar:
+            ctk.CTkButton(
+                btns, text="Confirmar cita",
+                fg_color=AZUL, hover_color=AZUL_HOVER,
+                text_color="white", height=42, corner_radius=8,
+                font=ctk.CTkFont(size=13, weight="bold"),
+                command=lambda: [on_confirmar(cita.get("codigo")), self.destroy()],
+            ).pack(fill="x", pady=(0, 6))
+
+        if estado in ("pendiente", "confirmada") and on_iniciar:
+            ctk.CTkButton(
+                btns, text="Iniciar servicio",
+                fg_color="#E67E22", hover_color="#CA6F1E",
+                text_color="white", height=42, corner_radius=8,
+                font=ctk.CTkFont(size=13, weight="bold"),
+                command=lambda: [on_iniciar(cita.get("codigo")), self.destroy()],
+            ).pack(fill="x", pady=(0, 6))
+
+        ctk.CTkButton(
+            btns, text="Cerrar",
+            fg_color="#2A2A2A", hover_color="#333333",
+            text_color=TEXT_G, height=36, corner_radius=8,
+            command=self.destroy,
+        ).pack(fill="x")
+
+
 class AgendaView(ctk.CTkFrame):
     def __init__(self, parent, usuario: dict):
         super().__init__(parent, fg_color=BG)
-        self.usuario = usuario
-        self._empleados = []       # lista de empleados, la carga el controlador
+        self.usuario      = usuario
+        self._empleados   = []
+        # El controlador conecta este callback para confirmar/iniciar desde el popup
+        self._on_confirmar = None
+        self._on_iniciar   = None
         self._construir()
 
     def _construir(self):
@@ -407,41 +501,60 @@ class AgendaView(ctk.CTkFrame):
     def _celda_cita(self, row, col, cita):
         """Crea una celda en la grilla: llena si hay cita o vacia si no hay."""
         if cita:
-            # Si hay cita, la muestro con el color del estado correspondiente
             estado = cita.get("estado", "pendiente")
             bg_color, texto_color, label_estado = COLOR_ESTADO.get(
                 estado, ("#1E1E1E", "#888888", estado.upper())
             )
+            # Las celdas pendientes tienen borde mas grueso para destacar
+            borde = 2 if estado == "pendiente" else 1
             celda = ctk.CTkFrame(
                 self.frame_grid, fg_color=bg_color,
                 corner_radius=6, height=64,
-                border_width=1, border_color=texto_color,
+                border_width=borde, border_color=texto_color,
             )
             celda.grid(row=row, column=col, sticky="nsew", padx=2, pady=2)
             celda.pack_propagate(False)
 
-            # Badge del estado (CONFIRMADA, PENDIENTE, etc.)
-            ctk.CTkLabel(
+            lbl_estado = ctk.CTkLabel(
                 celda, text=label_estado,
                 font=ctk.CTkFont(size=8, weight="bold"),
                 text_color=texto_color,
-            ).pack(anchor="w", padx=8, pady=(4, 0))
+            )
+            lbl_estado.pack(anchor="w", padx=8, pady=(4, 0))
 
-            # Nombre del servicio
-            ctk.CTkLabel(
+            # Muestra el nombre del cliente si viene en la consulta
+            nombre_cliente = cita.get("cliente_nombre") or ""
+            if nombre_cliente:
+                ctk.CTkLabel(
+                    celda, text=nombre_cliente[:20],
+                    font=ctk.CTkFont(size=10, weight="bold"),
+                    text_color=TEXT_W,
+                ).pack(anchor="w", padx=8)
+
+            lbl_servicio = ctk.CTkLabel(
                 celda, text=cita.get("servicio", "")[:22],
-                font=ctk.CTkFont(size=11, weight="bold"),
-                text_color=TEXT_W,
-            ).pack(anchor="w", padx=8)
-
-            # Codigo de la cita para identificarla
-            ctk.CTkLabel(
-                celda, text=f"Cód: {cita.get('codigo','')}",
-                font=ctk.CTkFont(size=9),
+                font=ctk.CTkFont(size=10),
                 text_color=TEXT_G,
-            ).pack(anchor="w", padx=8)
+            )
+            lbl_servicio.pack(anchor="w", padx=8)
+
+            # Al hacer clic en cualquier parte de la celda se abre el popup de detalle
+            def _abrir_popup(event=None, _cita=cita):
+                PopupDetalleCita(
+                    self,
+                    _cita,
+                    on_confirmar=self._on_confirmar,
+                    on_iniciar=self._on_iniciar,
+                )
+
+            for widget in [celda, lbl_estado, lbl_servicio]:
+                widget.bind("<Button-1>", _abrir_popup)
+            if nombre_cliente:
+                # lbl_cliente es el ultimo label pack-eado, lo bindeamos también
+                for w in celda.winfo_children():
+                    w.bind("<Button-1>", _abrir_popup)
+
         else:
-            # Celda vacia — slot disponible
             celda = ctk.CTkFrame(
                 self.frame_grid, fg_color="#161616",
                 corner_radius=6, height=64,

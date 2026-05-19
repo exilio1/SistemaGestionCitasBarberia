@@ -213,7 +213,17 @@ class CitasView(ctk.CTkFrame):
             tabla_card, text="Citas de hoy",
             font=ctk.CTkFont(size=15, weight="bold"),
             text_color=TEXT_W,
-        ).pack(anchor="w", padx=16, pady=(12, 4))
+        ).pack(anchor="w", padx=16, pady=(12, 2))
+
+        # Instruccion para la recepcionista
+        ctk.CTkLabel(
+            tabla_card,
+            text="Copia el codigo de la tabla, pegalo en el campo 'Codigo de cita' de arriba y presiona el boton que necesites.",
+            font=ctk.CTkFont(size=11),
+            text_color=TEXT_G,
+            wraplength=700,
+            justify="left",
+        ).pack(anchor="w", padx=16, pady=(0, 8))
 
         # Textbox monoespaciado para mostrar la tabla de citas
         self.tabla_citas = ctk.CTkTextbox(
@@ -285,24 +295,34 @@ class CitasView(ctk.CTkFrame):
         self.lbl_resultado.configure(text=mensaje, text_color=color)
 
     def cargar_citas(self, citas):
-        """Llena la tabla con la lista de citas del dia."""
+        """Llena la tabla con la lista de citas del dia incluyendo el nombre del cliente."""
         self.tabla_citas.configure(state="normal")
         self.tabla_citas.delete("1.0", "end")
 
         if not citas:
             self.tabla_citas.insert("end", "No hay citas registradas hoy.")
         else:
-            # Encabezado de la tabla con columnas alineadas
-            enc = f"{'CODIGO':<10} {'SERVICIO':<22} {'HORA':<8} {'ESTADO':<14}\n"
+            # Encabezado con todas las columnas que la recepcionista necesita ver
+            enc = (
+                f"{'CODIGO':<10} "
+                f"{'CLIENTE':<20} "
+                f"{'SERVICIO':<20} "
+                f"{'HORA':<7} "
+                f"{'BARBERO':<18} "
+                f"{'ESTADO'}\n"
+            )
             self.tabla_citas.insert("end", enc)
-            self.tabla_citas.insert("end", "─" * 58 + "\n")
+            self.tabla_citas.insert("end", "─" * 82 + "\n")
 
             for c in citas:
+                estado = c.get("estado", "")
                 linea = (
                     f"{c.get('codigo',''):<10} "
-                    f"{c.get('servicio','')[:20]:<22} "
-                    f"{c.get('hora','')[:5]:<8} "
-                    f"{c.get('estado',''):<14}\n"
+                    f"{(c.get('cliente_nombre') or '')[:18]:<20} "
+                    f"{c.get('servicio','')[:18]:<20} "
+                    f"{c.get('hora','')[:5]:<7} "
+                    f"{(c.get('empleado_nombre') or 'Sin asignar')[:16]:<18} "
+                    f"{estado.upper()}\n"
                 )
                 self.tabla_citas.insert("end", linea)
 

@@ -54,7 +54,20 @@ class CitaModel:
     def obtener_por_codigo(self, codigo):
         conn = get_connection()
         fila = conn.execute(
-            "SELECT c.*, s.nombre AS servicio, s.precio FROM citas c JOIN servicios s ON s.id = c.servicio_id WHERE c.codigo = ?",
+            """
+            SELECT c.*,
+                   s.nombre  AS servicio,
+                   s.precio,
+                   cl.nombre AS cliente_nombre,
+                   cl.cedula AS cliente_cedula,
+                   cl.telefono AS cliente_telefono,
+                   e.nombre  AS empleado_nombre
+            FROM citas c
+            JOIN  servicios  s  ON s.id  = c.servicio_id
+            LEFT JOIN clientes   cl ON cl.id = c.cliente_id
+            LEFT JOIN empleados  e  ON e.id  = c.empleado_id
+            WHERE c.codigo = ?
+            """,
             (codigo,)
         ).fetchone()
         conn.close()
@@ -63,7 +76,20 @@ class CitaModel:
         return None
 
     def listar_por_rango(self, fecha_inicio, fecha_fin, empleado_id=None):
-        consulta = "SELECT c.*, s.nombre AS servicio, s.precio FROM citas c JOIN servicios s ON s.id = c.servicio_id WHERE c.fecha BETWEEN ? AND ?"
+        consulta = """
+            SELECT c.*,
+                   s.nombre  AS servicio,
+                   s.precio,
+                   cl.nombre AS cliente_nombre,
+                   cl.cedula AS cliente_cedula,
+                   cl.telefono AS cliente_telefono,
+                   e.nombre  AS empleado_nombre
+            FROM citas c
+            JOIN  servicios  s  ON s.id  = c.servicio_id
+            LEFT JOIN clientes   cl ON cl.id = c.cliente_id
+            LEFT JOIN empleados  e  ON e.id  = c.empleado_id
+            WHERE c.fecha BETWEEN ? AND ?
+        """
         parametros = [fecha_inicio, fecha_fin]
         if empleado_id:
             consulta += " AND c.empleado_id = ?"
@@ -73,10 +99,7 @@ class CitaModel:
         conn = get_connection()
         filas = conn.execute(consulta, parametros).fetchall()
         conn.close()
-        resultado = []
-        for f in filas:
-            resultado.append(dict(f))
-        return resultado
+        return [dict(f) for f in filas]
 
     def confirmar(self, codigo):
         conn = get_connection()
