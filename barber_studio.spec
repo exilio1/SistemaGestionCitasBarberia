@@ -64,12 +64,25 @@ modulos_ocultos = [
 # Recopilo assets de customtkinter (temas, fuentes, imagenes)
 ctk_datas, ctk_binaries, ctk_hidden = collect_all('customtkinter')
 
+# Recopilo todos los modulos del bot de telegram
+tg_datas, tg_binaries, tg_hidden = collect_all('telegram')
+
 a = Analysis(
     ['app/main.py'],
     pathex=['.'],
-    binaries=ctk_binaries,
-    datas=ctk_datas,
-    hiddenimports=modulos_ocultos + ctk_hidden,
+    binaries=ctk_binaries + tg_binaries,
+    datas=ctk_datas + tg_datas,
+    hiddenimports=modulos_ocultos + ctk_hidden + tg_hidden + [
+        'telegram',
+        'telegram.ext',
+        'httpx',
+        'anyio',
+        'certifi',
+        'app.bot.telegram_bot',
+        'app.bot.handlers',
+        'app.bot.bot_manager',
+        'app.bot.queue_manager',
+    ],
     hookspath=[],
     runtime_hooks=[],
     excludes=[],

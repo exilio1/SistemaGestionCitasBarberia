@@ -39,7 +39,7 @@ jobs:
           python-version: '3.11'
 
       - name: instalar las librerias necesarias para empaquetar
-        run: pip install customtkinter Pillow bcrypt python-dotenv pyinstaller
+        run: pip install customtkinter Pillow bcrypt python-dotenv python-telegram-bot httpx anyio certifi pyinstaller
 
       # crea el archivo .env con el token del bot para que funcione al descargar
       - name: crear el archivo .env con la configuracion del bot
