@@ -1,0 +1,62 @@
+# este workflow empaqueta la app para Windows y macOS usando PyInstaller
+# se ejecuta manualmente desde la pestaña Actions de GitHub
+# al terminar sube los ejecutables directamente al release v1.0.0
+
+name: empaquetar ejecutables
+
+on:
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'version a empaquetar (ejemplo: v1.0.0)'
+        required: true
+        default: 'v1.0.0'
+
+jobs:
+  empaquetar:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: windows-latest
+            nombre_salida: BarberStudio-Windows.exe
+            ruta_dist: dist/BarberStudio.exe
+
+          - os: macos-latest
+            nombre_salida: BarberStudio-macOS
+            ruta_dist: dist/BarberStudio
+
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - name: descargar el codigo del repositorio
+        uses: actions/checkout@v4
+
+      - name: configurar python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: instalar las librerias necesarias para empaquetar
+        run: pip install customtkinter Pillow bcrypt python-dotenv pyinstaller
+
+      - name: crear el ejecutable con pyinstaller
+        run: >
+          pyinstaller
+          --windowed
+          --onefile
+          --collect-all customtkinter
+          --name BarberStudio
+          app/main.py
+
+      - name: renombrar el ejecutable segun la plataforma
+        shell: bash
+        run: mv "${{ matrix.ruta_dist }}" "dist/${{ matrix.nombre_salida }}"
+
+      - name: subir el ejecutable al release de github
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ github.event.inputs.tag }}
+          files: dist/${{ matrix.nombre_salida }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
