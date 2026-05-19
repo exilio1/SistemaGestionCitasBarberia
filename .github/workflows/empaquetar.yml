@@ -23,12 +23,9 @@ jobs:
       matrix:
         include:
           - os: windows-latest
-            nombre_salida: BarberStudio-Windows.exe
-            ruta_dist: dist/BarberStudio.exe
-
+            plataforma: windows
           - os: macos-latest
-            nombre_salida: BarberStudio-macOS
-            ruta_dist: dist/BarberStudio
+            plataforma: macos
 
     runs-on: ${{ matrix.os }}
 
@@ -44,7 +41,9 @@ jobs:
       - name: instalar las librerias necesarias para empaquetar
         run: pip install customtkinter Pillow bcrypt python-dotenv pyinstaller
 
-      - name: crear el ejecutable con pyinstaller
+      # ── Windows: genera un solo .exe ──────────────────────────────────────
+      - name: empaquetar para windows
+        if: matrix.plataforma == 'windows'
         run: >
           pyinstaller
           --windowed
@@ -54,14 +53,36 @@ jobs:
           --name BarberStudio
           app/main.py
 
-      - name: renombrar el ejecutable segun la plataforma
-        shell: bash
-        run: mv "${{ matrix.ruta_dist }}" "dist/${{ matrix.nombre_salida }}"
-
-      - name: subir el ejecutable al release de github
+      - name: subir ejecutable windows al release
+        if: matrix.plataforma == 'windows'
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ github.event.inputs.tag }}
-          files: dist/${{ matrix.nombre_salida }}
+          files: dist/BarberStudio.exe
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      # ── macOS: genera un .app dentro de una carpeta y lo comprime en zip ─
+      - name: empaquetar para macos
+        if: matrix.plataforma == 'macos'
+        run: >
+          pyinstaller
+          --windowed
+          --onedir
+          --collect-all customtkinter
+          --collect-submodules app
+          --name BarberStudio
+          app/main.py
+
+      - name: comprimir la app de macos en zip
+        if: matrix.plataforma == 'macos'
+        run: cd dist && zip -r BarberStudio-macOS.zip BarberStudio.app
+
+      - name: subir zip macos al release
+        if: matrix.plataforma == 'macos'
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ github.event.inputs.tag }}
+          files: dist/BarberStudio-macOS.zip
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
