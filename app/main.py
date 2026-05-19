@@ -2,40 +2,66 @@
 Punto de entrada de la aplicación de escritorio.
 Inicializa la BD y arranca el ciclo MVC:
   MainView → AuthController → DashboardView + Controllers por módulo
-El bot de Telegram arranca automaticamente en un hilo de fondo.
+
+El bot de Telegram corre como proceso separado para evitar conflictos
+con el event loop de asyncio dentro de la app empaquetada con PyInstaller.
+Si se lanza con --bot-only arranca solo el bot sin la interfaz grafica.
 """
 
-import threading
+import os
+import sys
+import subprocess
 import customtkinter as ctk
 from app.core.backup import crear_backup_automatico
 from app.core.database import init_db
 from app.views.main_view import MainView
 
 
-def _iniciar_bot():
+def _correr_solo_bot():
     """
-    Arranca el bot de Telegram en un hilo separado para no bloquear la app.
-    Si no hay token configurado o la libreria no esta instalada, no hace nada
-    y la app sigue funcionando normal.
+    Modo bot-only: arranca el bot de Telegram sin la interfaz grafica.
+    Se usa cuando el ejecutable se lanza con el argumento --bot-only.
+    """
+    init_db()
+    from app.bot.telegram_bot import main as bot_main
+    bot_main()
+
+
+def _lanzar_proceso_bot():
+    """
+    Lanza el bot como proceso independiente usando el mismo ejecutable
+    con el argumento --bot-only. Asi cada proceso tiene su propio
+    event loop de asyncio y no hay conflictos con la interfaz grafica.
     """
     try:
-        from app.bot.telegram_bot import main as bot_main
-        bot_main()
+        # Heredamos todas las variables de entorno del proceso principal
+        # para que el bot tenga acceso al token de Telegram
+        entorno = os.environ.copy()
+        subprocess.Popen(
+            [sys.executable, '--bot-only'],
+            env=entorno,
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL,
+        )
     except Exception:
-        # Sin token o sin libreria telegram — la app funciona igual sin el bot
+        # Si el bot no puede iniciar la app sigue funcionando normal
         pass
 
 
 def main():
-    # Primero inicializo la base de datos (crea las tablas si no existen)
+    # Si se llama con --bot-only solo arranca el bot y termina
+    if '--bot-only' in sys.argv:
+        _correr_solo_bot()
+        return
+
+    # Inicializo la base de datos (crea las tablas si no existen)
     init_db()
     crear_backup_automatico()
 
-    # Arranco el bot en un hilo daemon — se cierra solo cuando se cierra la app
-    hilo_bot = threading.Thread(target=_iniciar_bot, daemon=True)
-    hilo_bot.start()
+    # Lanzo el bot como proceso separado antes de abrir la ventana
+    _lanzar_proceso_bot()
 
-    # Configuro el tema visual de la app: modo oscuro con colores azul
+    # Configuro el tema visual: modo oscuro con acentos en azul
     ctk.set_appearance_mode("dark")
     ctk.set_default_color_theme("blue")
 
@@ -44,6 +70,5 @@ def main():
     ventana.mainloop()
 
 
-# Solo ejecuto main() si este archivo se corre directamente
 if __name__ == "__main__":
     main()
