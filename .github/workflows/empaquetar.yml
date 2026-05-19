@@ -12,6 +12,10 @@ on:
         required: true
         default: 'v1.0.0'
 
+# permiso necesario para que el workflow pueda subir archivos al release
+permissions:
+  contents: write
+
 jobs:
   empaquetar:
     strategy:
