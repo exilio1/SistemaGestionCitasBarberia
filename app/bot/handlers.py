@@ -79,7 +79,7 @@ def _teclado_calendario(anio: int, mes: int) -> InlineKeyboardMarkup:
     # ── Titulo del mes ────────────────────────────────────────────────────
     filas.append([
         InlineKeyboardButton(
-            f"📅  {_MESES[mes]}  {anio}",
+            f"-- {_MESES[mes]} {anio} --",
             callback_data="noop",
         )
     ])
@@ -171,12 +171,12 @@ def _botones_horas(horas):
 async def start(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     """Muestra la bienvenida con los comandos disponibles y el teclado persistente."""
     await update.message.reply_text(
-        "✂️ *Bienvenido a Barbers Studio*\n\n"
+        "*Bienvenido a Barbers Studio*\n\n"
         "Usa los botones de abajo o escribe un comando:\n\n"
-        "📅 /agendar — Reservar una nueva cita\n"
-        "❌ /cancelar — Cancelar tu cita\n"
-        "🔄 /reprogramar — Cambiar fecha u hora\n"
-        "🔍 /micita — Consultar tu cita\n",
+        "/agendar — Reservar una nueva cita\n"
+        "/cancelar — Cancelar tu cita\n"
+        "/reprogramar — Cambiar fecha u hora\n"
+        "/micita — Consultar tu cita\n",
         parse_mode="Markdown",
         reply_markup=TECLADO_INICIO,
     )
@@ -472,11 +472,11 @@ async def confirmar_cita(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
 
     # El código va en backticks para que el cliente pueda tocarlo y copiarlo
     await query.edit_message_text(
-        f"✅ *¡Cita confirmada!*\n\n"
-        f"Tu código de cita es:\n\n"
+        f"*Cita confirmada*\n\n"
+        f"Tu codigo de cita es:\n\n"
         f"`{codigo}`\n\n"
-        f"_(Toca el código para copiarlo)_\n\n"
-        f"Guarda este código — lo necesitas para cancelar o reprogramar tu cita.\n\n"
+        f"_(Toca el codigo para copiarlo)_\n\n"
+        f"Guarda este codigo, lo vas a necesitar para cancelar o reprogramar tu cita.\n\n"
         f"Usa /micita para consultar el estado de tu cita en cualquier momento.",
         parse_mode="Markdown",
     )
@@ -509,7 +509,7 @@ async def codigo_cancelar_recibido(update: Update, ctx: ContextTypes.DEFAULT_TYP
     codigo = update.message.text.strip().upper()
     if cancelar_cita(codigo):
         await update.message.reply_text(
-            f"✅ Cita `{codigo}` cancelada correctamente.",
+            f"Cita `{codigo}` cancelada correctamente.",
             parse_mode="Markdown",
         )
     else:
@@ -622,7 +622,7 @@ async def hora_reprog_recibida(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
 
     if exito:
         await query.edit_message_text(
-            f"✅ Cita `{ctx.user_data['codigo']}` reprogramada.\n\n"
+            f"Cita `{ctx.user_data['codigo']}` reprogramada correctamente.\n\n"
             f"Nueva fecha: *{ctx.user_data['nueva_fecha']}*\n"
             f"Nueva hora:  *{query.data}*",
             parse_mode="Markdown",
@@ -665,13 +665,13 @@ async def codigo_micita_recibido(update: Update, ctx: ContextTypes.DEFAULT_TYPE)
     estado_txt = etiquetas.get(cita.get("estado", ""), cita.get("estado", ""))
 
     await update.message.reply_text(
-        f"*Tu cita:*\n\n"
-        f"Código:   `{codigo}`\n"
+        f"*Informacion de tu cita:*\n\n"
+        f"Codigo:   `{codigo}`\n"
         f"Servicio: {cita.get('servicio')}\n"
         f"Fecha:    {cita.get('fecha')}\n"
         f"Hora:     {str(cita.get('hora', ''))[:5]}\n"
         f"Estado:   {estado_txt}\n\n"
-        f"_(Toca el código para copiarlo)_",
+        f"_(Toca el codigo para copiarlo)_",
         parse_mode="Markdown",
     )
     return ConversationHandler.END
