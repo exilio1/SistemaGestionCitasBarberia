@@ -63,6 +63,55 @@ class FacturacionView(ctk.CTkFrame):
         self._lbl_mes  = self._kpi_card(fila_kpis, "", "ESTE MES",       VERDE, col=1)
         self._lbl_pend = self._kpi_card(fila_kpis, "", "CITAS PENDIENTES", AZUL, col=2)
 
+        # ── Servicios finalizados sin cobrar ──────────────────────────────
+        # Muestra las citas con estado 'completada' que aún no tienen pago.
+        # El botón "Cobrar" rellena el formulario automáticamente.
+        panel_sinc = ctk.CTkFrame(scroll, fg_color=CARD, corner_radius=12)
+        panel_sinc.pack(fill="x", pady=(0, 14))
+
+        hdr_sinc = ctk.CTkFrame(panel_sinc, fg_color="transparent")
+        hdr_sinc.pack(fill="x", padx=16, pady=(12, 4))
+
+        ctk.CTkLabel(
+            hdr_sinc,
+            text="Servicios finalizados sin cobrar",
+            font=ctk.CTkFont(size=15, weight="bold"),
+            text_color=TEXT_W,
+        ).pack(side="left")
+
+        # Badge que muestra cuántas citas están pendientes de cobro
+        self._lbl_sinc_badge = ctk.CTkLabel(
+            hdr_sinc, text="",
+            font=ctk.CTkFont(size=11, weight="bold"),
+            fg_color="#2A2A2A", corner_radius=8,
+            text_color=TEXT_G,
+        )
+        self._lbl_sinc_badge.pack(side="left", padx=(10, 0), ipadx=10, ipady=3)
+
+        ctk.CTkLabel(
+            panel_sinc,
+            text="Haz clic en 'Cobrar' para rellenar el formulario con los datos de esa cita.",
+            font=ctk.CTkFont(size=11),
+            text_color=TEXT_G,
+        ).pack(anchor="w", padx=16, pady=(0, 8))
+
+        # Lista scrollable con las citas pendientes de cobro
+        self._frame_sinc = ctk.CTkScrollableFrame(
+            panel_sinc,
+            fg_color="transparent",
+            height=160,
+            scrollbar_button_color="#333333",
+            scrollbar_button_hover_color="#444444",
+        )
+        self._frame_sinc.pack(fill="x", padx=16, pady=(0, 12))
+
+        # Mensaje inicial antes de que el controlador cargue los datos
+        ctk.CTkLabel(
+            self._frame_sinc,
+            text="Cargando...",
+            font=ctk.CTkFont(size=11), text_color=TEXT_G,
+        ).pack(pady=10)
+
         # ── Formulario de registro de pago (solo para la recepcionista) ───
         if self._rol == "recepcionista":
             panel_form = ctk.CTkFrame(scroll, fg_color=CARD, corner_radius=12)
@@ -394,6 +443,82 @@ class FacturacionView(ctk.CTkFrame):
         """Muestra el rango filtrado en español."""
         texto = f"Mostrando pagos desde {formatear_fecha_larga_es(desde)} hasta {formatear_fecha_larga_es(hasta)}"
         self.lbl_rango.configure(text=texto)
+
+    def mostrar_sin_cobrar(self, citas: list):
+        """Refresca la sección de servicios finalizados sin cobrar."""
+        n = len(citas)
+
+        # Actualizo el badge de conteo
+        if n == 0:
+            self._lbl_sinc_badge.configure(text="Todo al día", text_color=VERDE)
+        else:
+            self._lbl_sinc_badge.configure(
+                text=f"{n} pendiente{'s' if n > 1 else ''}",
+                text_color="#E67E22",
+            )
+
+        # Limpio filas anteriores
+        for w in self._frame_sinc.winfo_children():
+            w.destroy()
+
+        if not citas:
+            ctk.CTkLabel(
+                self._frame_sinc,
+                text="No hay servicios pendientes de cobro.",
+                font=ctk.CTkFont(size=11), text_color=TEXT_G,
+            ).pack(pady=14)
+            return
+
+        for cita in citas:
+            fila = ctk.CTkFrame(self._frame_sinc, fg_color=CARD2, corner_radius=6)
+            fila.pack(fill="x", pady=2)
+
+            # Badge con el código de la cita
+            ctk.CTkLabel(
+                fila,
+                text=cita.get("codigo", ""),
+                fg_color="#252525", corner_radius=4,
+                font=ctk.CTkFont(size=11, family="Courier", weight="bold"),
+                text_color=GOLD,
+            ).pack(side="left", padx=(8, 10), pady=7, ipadx=6, ipady=2)
+
+            # Info: cliente · servicio · precio · fecha hora
+            cliente  = (cita.get("cliente_nombre") or "—")[:16]
+            servicio = (cita.get("servicio") or "")[:18]
+            precio   = cita.get("precio", 0) or 0
+            fecha    = cita.get("fecha", "")
+            hora     = str(cita.get("hora", ""))[:5]
+
+            ctk.CTkLabel(
+                fila,
+                text=f"{cliente}  ·  {servicio}  ·  ${precio:,.0f}  ·  {fecha}  {hora}",
+                font=ctk.CTkFont(size=11),
+                text_color=TEXT_W,
+                anchor="w",
+            ).pack(side="left", fill="x", expand=True)
+
+            # Botón Cobrar — solo visible para la recepcionista que tiene el formulario
+            if hasattr(self, "entry_codigo"):
+                ctk.CTkButton(
+                    fila, text="Cobrar",
+                    width=72, height=28, corner_radius=6,
+                    fg_color="#1A3A2A", hover_color="#1E5A3A",
+                    text_color=VERDE,
+                    font=ctk.CTkFont(size=11, weight="bold"),
+                    command=lambda c=cita: self._auto_fill_cobro(c),
+                ).pack(side="right", padx=8, pady=6)
+
+    def _auto_fill_cobro(self, cita: dict):
+        """Rellena el formulario de pago con los datos de la cita elegida."""
+        if hasattr(self, "entry_codigo"):
+            self.entry_codigo.delete(0, "end")
+            self.entry_codigo.insert(0, cita.get("codigo", ""))
+
+        if hasattr(self, "entry_monto"):
+            self.entry_monto.delete(0, "end")
+            precio = cita.get("precio")
+            if precio is not None:
+                self.entry_monto.insert(0, str(int(float(precio))))
 
     def _abrir_calendario(self, campo):
         entry = self.entry_desde if campo == "desde" else self.entry_hasta

@@ -28,6 +28,8 @@ class FacturacionController:
 
         # Cargo los datos del mes actual al abrir la pantalla
         self._cargar_mes_actual()
+        # Cargo las citas finalizadas sin cobrar
+        self._cargar_sin_cobrar()
 
     # ── Cargar mes actual ─────────────────────────────────────────────────────
 
@@ -115,6 +117,19 @@ class FacturacionController:
         except Exception:
             self._view.mostrar_facturas([])
 
+        # Refresco la lista de citas finalizadas sin cobrar
+        self._cargar_sin_cobrar()
+
+    # ── Citas sin cobrar ──────────────────────────────────────────────────────
+
+    def _cargar_sin_cobrar(self):
+        """Carga las citas en estado 'completada' que aún no tienen pago."""
+        try:
+            citas = self._modelo_cita.listar_completadas_sin_pago()
+            self._view.mostrar_sin_cobrar(citas)
+        except Exception:
+            self._view.mostrar_sin_cobrar([])
+
     # ── Registrar pago ────────────────────────────────────────────────────────
 
     def _registrar_pago(self):
@@ -144,7 +159,9 @@ class FacturacionController:
             self._view.mostrar_msg_pago(f"No se encontró la cita '{codigo}'.", error=True)
             return
 
-        if cita.get("estado") not in ("confirmada", "en_curso", "pendiente"):
+        # Permite cobrar citas completadas (finalizadas desde la agenda sin pago)
+        # además de las que están en flujo activo
+        if cita.get("estado") not in ("pendiente", "confirmada", "en_curso", "completada"):
             self._view.mostrar_msg_pago(
                 f"La cita está en estado '{cita.get('estado')}' y no se puede cobrar.",
                 error=True,
@@ -171,8 +188,9 @@ class FacturacionController:
             self._view.mostrar_msg_pago(str(e), error=True)
             return
 
-        # Marco la cita como completada ahora que se cobró
-        self._modelo_cita.actualizar_estado(codigo, "completada")
+        # Marco la cita como completada si aún no lo está (puede venir de la agenda)
+        if cita.get("estado") != "completada":
+            self._modelo_cita.actualizar_estado(codigo, "completada")
 
         pago_creado = self._modelo_pago.obtener_por_cita(cita["id"])
         numero_factura = None

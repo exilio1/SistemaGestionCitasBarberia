@@ -149,6 +149,29 @@ class CitaModel:
             return dict(fila)
         return None
 
+    def listar_completadas_sin_pago(self):
+        """Retorna las citas en estado 'completada' que aún no tienen pago registrado."""
+        conn = get_connection()
+        filas = conn.execute(
+            """
+            SELECT c.*,
+                   s.nombre  AS servicio,
+                   s.precio,
+                   cl.nombre AS cliente_nombre,
+                   e.nombre  AS empleado_nombre
+            FROM citas c
+            JOIN  servicios  s  ON s.id  = c.servicio_id
+            LEFT JOIN clientes   cl ON cl.id = c.cliente_id
+            LEFT JOIN empleados  e  ON e.id  = c.empleado_id
+            LEFT JOIN pagos      p  ON p.cita_id = c.id
+            WHERE c.estado = 'completada'
+              AND p.id IS NULL
+            ORDER BY c.fecha DESC, c.hora DESC
+            """
+        ).fetchall()
+        conn.close()
+        return [dict(f) for f in filas]
+
     def listar_todas(self):
         conn = get_connection()
         filas = conn.execute(
