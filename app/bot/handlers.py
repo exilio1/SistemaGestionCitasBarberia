@@ -676,3 +676,21 @@ async def codigo_micita_recibido(update: Update, ctx: ContextTypes.DEFAULT_TYPE)
         parse_mode="Markdown",
     )
     return ConversationHandler.END
+
+
+# ── Handler de mensajes fuera de flujo ───────────────────────────────────────
+# Se activa cuando el usuario escribe texto sin estar dentro de ninguna
+# conversacion activa (/agendar, /cancelar, etc.). Guia al usuario para
+# que use los comandos correctos en lugar de quedarse sin respuesta.
+
+async def mensaje_desconocido(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
+    """Responde a cualquier texto que no pertenezca a un flujo activo."""
+    await update.message.reply_text(
+        "Para usar el servicio de Barbers Studio elige una de estas opciones:\n\n"
+        "/agendar — Reservar una nueva cita\n"
+        "/micita — Consultar el estado de tu cita\n"
+        "/cancelar — Cancelar tu cita\n"
+        "/reprogramar — Cambiar la fecha u hora de tu cita\n\n"
+        "Tambien puedes usar los botones que aparecen en la parte inferior del chat.",
+        reply_markup=TECLADO_INICIO,
+    )

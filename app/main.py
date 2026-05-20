@@ -34,22 +34,30 @@ def _lanzar_proceso_bot():
 
     - App empaquetada con PyInstaller: ejecuta el mismo binario con --bot-only
     - Modo desarrollo (python -m app.main): ejecuta el modulo del bot directamente
+      Los logs del bot se guardan en bot.log junto al proyecto para poder depurar.
     """
     try:
         entorno = os.environ.copy()
 
         if getattr(sys, 'frozen', False):
             # Ejecutable empaquetado — el binario sabe manejar --bot-only
-            cmd = [sys.executable, '--bot-only']
+            cmd       = [sys.executable, '--bot-only']
+            log_out   = subprocess.DEVNULL
+            log_err   = subprocess.DEVNULL
         else:
-            # Modo desarrollo — lanzamos el modulo del bot como subproceso de Python
-            cmd = [sys.executable, '-m', 'app.bot.telegram_bot']
+            # Modo desarrollo — guardamos los logs en bot.log para poder leerlos
+            cmd       = [sys.executable, '-m', 'app.bot.telegram_bot']
+            log_path  = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'bot.log')
+            log_path  = os.path.normpath(log_path)
+            _log_file = open(log_path, 'a', encoding='utf-8')
+            log_out   = _log_file
+            log_err   = _log_file
 
         subprocess.Popen(
             cmd,
             env=entorno,
-            stdout=subprocess.DEVNULL,
-            stderr=subprocess.DEVNULL,
+            stdout=log_out,
+            stderr=log_err,
         )
     except Exception:
         pass

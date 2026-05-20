@@ -74,6 +74,8 @@ from app.bot.handlers import (
     # /micita
     micita_start,
     codigo_micita_recibido,
+    # Mensajes fuera de flujo
+    mensaje_desconocido,
     # Constantes de estado que usa el ConversationHandler para saber en qué paso voy
     NOMBRE, CEDULA, CONFIRMAR_CEDULA, TELEFONO, SERVICIO, BARBERO, FECHA, HORA, CONFIRMAR,
     CODIGO_CANCELAR,
@@ -173,11 +175,15 @@ def main():
     )
 
     # Registro todos los handlers en la aplicación del bot
+    # IMPORTANTE: el orden importa — los ConversationHandlers van primero;
+    # mensaje_desconocido captura todo lo que no encaje en ningún flujo activo.
     app.add_handler(CommandHandler("start", start))
     app.add_handler(conv_agendar)
     app.add_handler(conv_cancelar)
     app.add_handler(conv_reprogramar)
     app.add_handler(conv_micita)
+    # Catch-all: texto fuera de cualquier conversación activa
+    app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, mensaje_desconocido))
 
     # Registro los comandos del menu de Telegram (aparecen al tocar el icono "/" en el chat)
     # Esto hace que el boton de menu siempre este disponible para el cliente
