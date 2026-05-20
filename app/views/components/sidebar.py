@@ -23,7 +23,6 @@ ROJO       = "#C0392B"       # color del boton cerrar sesion
 MENUS_BASE = [
     ("Panel Principal", "PanelPrincipal"),
     ("Agenda",          "Agenda"),
-    ("Gestionar Citas", "Citas"),
     ("Facturación",     "Facturacion"),
     ("Reportes",        "Reportes"),
     ("Equipo",          "Equipo"),

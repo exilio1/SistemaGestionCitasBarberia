@@ -166,21 +166,243 @@ class CalendarioPopup(ctk.CTkToplevel):
         self.destroy()
 
 
-class PopupDetalleCita(ctk.CTkToplevel):
+class PopupReprogramar(ctk.CTkToplevel):
     """
-    Ventana emergente que muestra el detalle completo de una cita al hacer clic
-    sobre su celda en la agenda. Si la cita esta pendiente, ofrece un boton para
-    confirmarla directamente sin tener que ir a Gestionar Citas.
+    Dialogo para reprogramar una cita.
+    Muestra un selector de fecha (con calendario) y botones de hora disponibles.
+    Los botones Guardar/Cancelar están siempre visibles al fondo.
+    Llama a on_guardar(codigo, nueva_fecha, nueva_hora) al confirmar.
     """
 
-    def __init__(self, parent, cita: dict, on_confirmar=None, on_iniciar=None):
+    _COLS = 4   # botones de hora por fila
+
+    def __init__(self, parent, cita: dict, on_guardar):
         super().__init__(parent)
-        self.title("Detalle de cita")
-        self.geometry("400x430")
+        self.title("Reprogramar Cita")
+        self.geometry("440x480")
         self.resizable(False, False)
         self.configure(fg_color=CARD)
         self.transient(parent.winfo_toplevel())
         self.grab_set()
+
+        self._cita              = cita
+        self._on_guardar        = on_guardar
+        self._hora_seleccionada = None
+        self._btns_hora         = {}   # hora_str → CTkButton
+
+        self._construir()
+
+    def _construir(self):
+        # ── FOOTER — se packea PRIMERO para que siempre quede visible al fondo ──
+        ctk.CTkFrame(self, height=1, fg_color="#2A2A2A").pack(
+            side="bottom", fill="x", padx=24, pady=(0, 0)
+        )
+        footer = ctk.CTkFrame(self, fg_color="transparent")
+        footer.pack(side="bottom", fill="x", padx=24, pady=(10, 18))
+
+        ctk.CTkButton(
+            footer, text="Guardar cambios",
+            fg_color=GOLD, hover_color=GOLD_HOVER,
+            text_color="#111111", height=42, corner_radius=8,
+            font=ctk.CTkFont(size=13, weight="bold"),
+            command=self._guardar,
+        ).pack(side="left", expand=True, fill="x", padx=(0, 6))
+
+        ctk.CTkButton(
+            footer, text="Cancelar",
+            fg_color="#2A2A2A", hover_color="#333333",
+            text_color=TEXT_G, height=42, corner_radius=8,
+            font=ctk.CTkFont(size=13),
+            command=self.destroy,
+        ).pack(side="left", expand=True, fill="x")
+
+        # ── HEADER ────────────────────────────────────────────────────────
+        ctk.CTkLabel(
+            self,
+            text=f"Reprogramar  {self._cita.get('codigo', '')}",
+            font=ctk.CTkFont(size=15, weight="bold"),
+            text_color=GOLD,
+        ).pack(padx=24, pady=(20, 2), anchor="w")
+
+        ctk.CTkLabel(
+            self,
+            text=f"Servicio: {self._cita.get('servicio', '')}",
+            font=ctk.CTkFont(size=12),
+            text_color=TEXT_G,
+        ).pack(padx=24, anchor="w")
+
+        ctk.CTkFrame(self, height=1, fg_color="#2A2A2A").pack(fill="x", padx=24, pady=12)
+
+        # ── FECHA ─────────────────────────────────────────────────────────
+        ctk.CTkLabel(
+            self, text="NUEVA FECHA",
+            font=ctk.CTkFont(size=9, weight="bold"), text_color=TEXT_G,
+        ).pack(padx=24, anchor="w")
+
+        fila_fecha = ctk.CTkFrame(self, fg_color="transparent")
+        fila_fecha.pack(fill="x", padx=24, pady=(4, 0))
+
+        self._entry_fecha = ctk.CTkEntry(
+            fila_fecha,
+            placeholder_text=date.today().isoformat(),
+            fg_color="#1F1F1F", border_color="#333333",
+            text_color=TEXT_W, height=38, font=ctk.CTkFont(size=13),
+        )
+        self._entry_fecha.pack(side="left", fill="x", expand=True, padx=(0, 6))
+        self._entry_fecha.bind("<Return>", lambda _e: self._cargar_horas())
+
+        ctk.CTkButton(
+            fila_fecha, text="Calendario", width=104, height=38,
+            fg_color="#2A2A2A", hover_color="#333333", text_color=TEXT_W,
+            font=ctk.CTkFont(size=12),
+            command=self._abrir_calendario,
+        ).pack(side="left", padx=(0, 6))
+
+        ctk.CTkButton(
+            fila_fecha, text="Buscar", width=68, height=38,
+            fg_color=AZUL, hover_color=AZUL_HOVER, text_color="white",
+            font=ctk.CTkFont(size=12),
+            command=self._cargar_horas,
+        ).pack(side="left")
+
+        # ── HORAS (scrollable — ocupa el espacio restante entre header y footer) ──
+        ctk.CTkLabel(
+            self, text="HORA DISPONIBLE",
+            font=ctk.CTkFont(size=9, weight="bold"), text_color=TEXT_G,
+        ).pack(padx=24, anchor="w", pady=(12, 4))
+
+        self._scroll_horas = ctk.CTkScrollableFrame(
+            self,
+            fg_color="transparent",
+            scrollbar_button_color="#333333",
+            scrollbar_button_hover_color="#444444",
+        )
+        self._scroll_horas.pack(fill="both", expand=True, padx=24, pady=(0, 8))
+
+        # Configuro 4 columnas de igual peso para el grid de botones
+        for c in range(self._COLS):
+            self._scroll_horas.columnconfigure(c, weight=1)
+
+        # Mensaje inicial
+        ctk.CTkLabel(
+            self._scroll_horas,
+            text="Selecciona una fecha y pulsa Buscar",
+            font=ctk.CTkFont(size=11), text_color=TEXT_G,
+        ).grid(row=0, column=0, columnspan=self._COLS, pady=14)
+
+    # ── Helpers ───────────────────────────────────────────────────────────────
+
+    def _abrir_calendario(self):
+        fecha_actual = self._entry_fecha.get().strip() or date.today().isoformat()
+        CalendarioPopup(self, fecha_actual, self._poner_fecha)
+
+    def _poner_fecha(self, fecha: str):
+        self._entry_fecha.delete(0, "end")
+        self._entry_fecha.insert(0, fecha)
+        self._cargar_horas()
+
+    def _cargar_horas(self):
+        """Consulta horas libres y las dibuja como botones en el grid."""
+        from app.models.cita_model import CitaModel
+        from tkinter import messagebox
+
+        fecha = self._entry_fecha.get().strip()
+        if not fecha:
+            return
+
+        try:
+            datetime.strptime(fecha, "%Y-%m-%d")
+        except ValueError:
+            messagebox.showerror("Fecha inválida", "Usa el formato AAAA-MM-DD.", parent=self)
+            return
+
+        empleado_id = self._cita.get("empleado_id")
+        horas = CitaModel().horarios_disponibles(fecha, empleado_id)
+
+        # Limpio el grid y reseteo selección
+        for w in self._scroll_horas.winfo_children():
+            w.destroy()
+        self._btns_hora.clear()
+        self._hora_seleccionada = None
+
+        if not horas:
+            ctk.CTkLabel(
+                self._scroll_horas,
+                text=f"No hay horas disponibles el {fecha}.\nElige otra fecha.",
+                font=ctk.CTkFont(size=11), text_color=TEXT_G,
+                justify="center",
+            ).grid(row=0, column=0, columnspan=self._COLS, pady=14)
+            return
+
+        # Coloco cada botón en su celda del grid — la última fila queda
+        # con las celdas vacías sin estirar, igual de ancha que las demás
+        for i, hora in enumerate(horas):
+            fila = i // self._COLS
+            col  = i %  self._COLS
+            btn = ctk.CTkButton(
+                self._scroll_horas, text=hora,
+                fg_color="#252525", hover_color="#303030",
+                text_color=TEXT_W, height=36, corner_radius=6,
+                font=ctk.CTkFont(size=12, weight="bold"),
+                command=lambda h=hora: self._seleccionar_hora(h),
+            )
+            btn.grid(row=fila, column=col, padx=3, pady=3, sticky="ew")
+            self._btns_hora[hora] = btn
+
+    def _seleccionar_hora(self, hora: str):
+        """Resalta el botón elegido en dorado y desactiva los demás."""
+        for btn in self._btns_hora.values():
+            btn.configure(fg_color="#252525", text_color=TEXT_W)
+        if hora in self._btns_hora:
+            self._btns_hora[hora].configure(fg_color=GOLD, text_color="#111111")
+        self._hora_seleccionada = hora
+
+    def _guardar(self):
+        from tkinter import messagebox
+
+        nueva_fecha = self._entry_fecha.get().strip()
+        if not nueva_fecha:
+            messagebox.showerror("Fecha requerida", "Selecciona una fecha.", parent=self)
+            return
+        if not self._hora_seleccionada:
+            messagebox.showerror("Hora requerida", "Selecciona una hora disponible.", parent=self)
+            return
+        try:
+            datetime.strptime(nueva_fecha, "%Y-%m-%d")
+        except ValueError:
+            messagebox.showerror("Fecha inválida", "Usa el formato AAAA-MM-DD.", parent=self)
+            return
+
+        if self._on_guardar:
+            self._on_guardar(self._cita.get("codigo"), nueva_fecha, self._hora_seleccionada)
+        self.destroy()
+
+
+class PopupDetalleCita(ctk.CTkToplevel):
+    """
+    Ventana emergente que muestra el detalle completo de una cita al hacer clic
+    sobre su celda en la agenda. Ofrece todas las acciones segun el estado:
+      - pendiente  → Confirmar, Iniciar Servicio, Reprogramar, Cancelar
+      - confirmada → Iniciar Servicio, Reprogramar, Cancelar
+      - en_curso   → Finalizar Servicio, Cancelar
+      - completada / cancelada → solo Cerrar
+    """
+
+    def __init__(
+        self, parent, cita: dict,
+        on_confirmar=None, on_iniciar=None,
+        on_finalizar=None, on_cancelar=None, on_reprogramar=None,
+    ):
+        super().__init__(parent)
+        self.title("Detalle de cita")
+        self.geometry("400x480")
+        self.resizable(False, False)
+        self.configure(fg_color=CARD)
+        self.transient(parent.winfo_toplevel())
+        self.grab_set()
+
+        self._cita          = cita
+        self._on_reprogramar = on_reprogramar
 
         estado = cita.get("estado", "pendiente")
         bg_estado, color_estado, label_estado = COLOR_ESTADO.get(
@@ -228,30 +450,79 @@ class PopupDetalleCita(ctk.CTkToplevel):
         btns = ctk.CTkFrame(self, fg_color="transparent")
         btns.pack(fill="x", padx=24, pady=(0, 16))
 
+        codigo = cita.get("codigo")
+
         if estado == "pendiente" and on_confirmar:
             ctk.CTkButton(
                 btns, text="Confirmar cita",
                 fg_color=AZUL, hover_color=AZUL_HOVER,
-                text_color="white", height=42, corner_radius=8,
+                text_color="white", height=38, corner_radius=8,
                 font=ctk.CTkFont(size=13, weight="bold"),
-                command=lambda: [on_confirmar(cita.get("codigo")), self.destroy()],
-            ).pack(fill="x", pady=(0, 6))
+                command=lambda: [on_confirmar(codigo), self.destroy()],
+            ).pack(fill="x", pady=(0, 5))
 
         if estado in ("pendiente", "confirmada") and on_iniciar:
             ctk.CTkButton(
-                btns, text="Iniciar servicio",
+                btns, text="Iniciar Servicio",
                 fg_color="#E67E22", hover_color="#CA6F1E",
-                text_color="white", height=42, corner_radius=8,
+                text_color="white", height=38, corner_radius=8,
                 font=ctk.CTkFont(size=13, weight="bold"),
-                command=lambda: [on_iniciar(cita.get("codigo")), self.destroy()],
-            ).pack(fill="x", pady=(0, 6))
+                command=lambda: [on_iniciar(codigo), self.destroy()],
+            ).pack(fill="x", pady=(0, 5))
+
+        if estado == "en_curso" and on_finalizar:
+            ctk.CTkButton(
+                btns, text="Finalizar Servicio",
+                fg_color="#8E44AD", hover_color="#7D3C98",
+                text_color="white", height=38, corner_radius=8,
+                font=ctk.CTkFont(size=13, weight="bold"),
+                command=lambda: [on_finalizar(codigo), self.destroy()],
+            ).pack(fill="x", pady=(0, 5))
+
+        if estado in ("pendiente", "confirmada") and on_reprogramar:
+            ctk.CTkButton(
+                btns, text="Reprogramar",
+                fg_color=GOLD, hover_color=GOLD_HOVER,
+                text_color="#111111", height=38, corner_radius=8,
+                font=ctk.CTkFont(size=13, weight="bold"),
+                command=self._abrir_reprogramar,
+            ).pack(fill="x", pady=(0, 5))
+
+        if estado not in ("completada", "cancelada") and on_cancelar:
+            ctk.CTkButton(
+                btns, text="Cancelar Cita",
+                fg_color="#3A1A1A", hover_color="#4A2A2A",
+                text_color=ROJO, height=38, corner_radius=8,
+                font=ctk.CTkFont(size=13, weight="bold"),
+                command=lambda: self._confirmar_cancelacion(codigo, on_cancelar),
+            ).pack(fill="x", pady=(0, 5))
 
         ctk.CTkButton(
             btns, text="Cerrar",
             fg_color="#2A2A2A", hover_color="#333333",
-            text_color=TEXT_G, height=36, corner_radius=8,
+            text_color=TEXT_G, height=34, corner_radius=8,
             command=self.destroy,
         ).pack(fill="x")
+
+    def _abrir_reprogramar(self):
+        """Abre el dialogo de reprogramacion. Al guardar, cierra este popup tambien."""
+        def _on_guardado(codigo, fecha, hora):
+            if self._on_reprogramar:
+                self._on_reprogramar(codigo, fecha, hora)
+            self.destroy()
+
+        PopupReprogramar(self, self._cita, _on_guardado)
+
+    def _confirmar_cancelacion(self, codigo, on_cancelar):
+        """Pide confirmacion antes de cancelar para evitar cancelaciones accidentales."""
+        from tkinter import messagebox
+        if messagebox.askyesno(
+            "Cancelar cita",
+            f"¿Seguro que deseas cancelar la cita {codigo}?\nEsta accion no se puede deshacer.",
+            parent=self,
+        ):
+            on_cancelar(codigo)
+            self.destroy()
 
 
 class AgendaView(ctk.CTkFrame):
@@ -259,9 +530,12 @@ class AgendaView(ctk.CTkFrame):
         super().__init__(parent, fg_color=BG)
         self.usuario      = usuario
         self._empleados   = []
-        # El controlador conecta este callback para confirmar/iniciar desde el popup
-        self._on_confirmar = None
-        self._on_iniciar   = None
+        # El controlador conecta estos callbacks para las acciones del popup de detalle
+        self._on_confirmar  = None
+        self._on_iniciar    = None
+        self._on_finalizar  = None
+        self._on_cancelar   = None
+        self._on_reprogramar = None
         self._construir()
 
     def _construir(self):
@@ -475,9 +749,9 @@ class AgendaView(ctk.CTkFrame):
         for fila_idx, hora in enumerate(horas):
             row_num = fila_idx + 1
 
-            # Celda de la hora (columna 0)
+            # Celda de la hora (columna 0) — altura 82 para que alinee con las celdas de cita
             celda_hora = ctk.CTkFrame(
-                self.frame_grid, fg_color="transparent", height=64
+                self.frame_grid, fg_color="transparent", height=82
             )
             celda_hora.grid(row=row_num, column=0, sticky="nw", pady=2)
             celda_hora.pack_propagate(False)
@@ -485,7 +759,7 @@ class AgendaView(ctk.CTkFrame):
                 celda_hora, text=hora,
                 font=ctk.CTkFont(size=11),
                 text_color=TEXT_G,
-            ).pack(padx=8, pady=10)
+            ).pack(padx=8, pady=14)
 
             # Dibujo la celda de cada barbero en esa hora
             for col, emp in enumerate(empleados):
@@ -495,7 +769,7 @@ class AgendaView(ctk.CTkFrame):
 
             # Celda vacia en la columna "Sin Asignar"
             ctk.CTkFrame(
-                self.frame_grid, fg_color="#161616", corner_radius=6, height=64,
+                self.frame_grid, fg_color="#161616", corner_radius=6, height=82,
             ).grid(row=row_num, column=len(empleados) + 1, sticky="nsew", padx=2, pady=2)
 
     def _celda_cita(self, row, col, cita):
@@ -509,7 +783,7 @@ class AgendaView(ctk.CTkFrame):
             borde = 2 if estado == "pendiente" else 1
             celda = ctk.CTkFrame(
                 self.frame_grid, fg_color=bg_color,
-                corner_radius=6, height=64,
+                corner_radius=6, height=82,
                 border_width=borde, border_color=texto_color,
             )
             celda.grid(row=row, column=col, sticky="nsew", padx=2, pady=2)
@@ -520,7 +794,7 @@ class AgendaView(ctk.CTkFrame):
                 font=ctk.CTkFont(size=8, weight="bold"),
                 text_color=texto_color,
             )
-            lbl_estado.pack(anchor="w", padx=8, pady=(4, 0))
+            lbl_estado.pack(anchor="w", padx=8, pady=(6, 0))
 
             # Muestra el nombre del cliente si viene en la consulta
             nombre_cliente = cita.get("cliente_nombre") or ""
@@ -529,14 +803,14 @@ class AgendaView(ctk.CTkFrame):
                     celda, text=nombre_cliente[:20],
                     font=ctk.CTkFont(size=10, weight="bold"),
                     text_color=TEXT_W,
-                ).pack(anchor="w", padx=8)
+                ).pack(anchor="w", padx=8, pady=(2, 0))
 
             lbl_servicio = ctk.CTkLabel(
                 celda, text=cita.get("servicio", "")[:22],
                 font=ctk.CTkFont(size=10),
                 text_color=TEXT_G,
             )
-            lbl_servicio.pack(anchor="w", padx=8)
+            lbl_servicio.pack(anchor="w", padx=8, pady=(1, 0))
 
             # Al hacer clic en cualquier parte de la celda se abre el popup de detalle
             def _abrir_popup(event=None, _cita=cita):
@@ -545,6 +819,9 @@ class AgendaView(ctk.CTkFrame):
                     _cita,
                     on_confirmar=self._on_confirmar,
                     on_iniciar=self._on_iniciar,
+                    on_finalizar=self._on_finalizar,
+                    on_cancelar=self._on_cancelar,
+                    on_reprogramar=self._on_reprogramar,
                 )
 
             for widget in [celda, lbl_estado, lbl_servicio]:
@@ -557,6 +834,6 @@ class AgendaView(ctk.CTkFrame):
         else:
             celda = ctk.CTkFrame(
                 self.frame_grid, fg_color="#161616",
-                corner_radius=6, height=64,
+                corner_radius=6, height=82,
             )
             celda.grid(row=row, column=col, sticky="nsew", padx=2, pady=2)

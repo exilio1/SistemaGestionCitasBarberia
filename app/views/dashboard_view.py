@@ -53,10 +53,6 @@ PANTALLAS = {
     ),
 
     # ── Modulos secundarios (acceso interno, no aparecen en sidebar) ──────
-    "Citas": (
-        "app.views.screens.citas_view",              "CitasView",
-        "app.controllers.citas_controller",          "CitasController",
-    ),
     "Empleados": (
         "app.views.screens.empleados_view",          "EmpleadosView",
         "app.controllers.empleados_controller",      "EmpleadosController",
