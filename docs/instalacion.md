@@ -1,90 +1,62 @@
-# Instalación del Sistema
+# Instalación
 
-Barbers Studio es una aplicación de escritorio. Para ejecutarla en un computador se puede hacer de dos formas: usando el ejecutable empaquetado (la forma más sencilla) o corriendo el código fuente directamente con Python.
-
----
-
-## Opción 1 — Ejecutable empaquetado (recomendada para usuarios finales)
-
-Esta opción no requiere instalar Python ni ninguna dependencia. Solo se descarga el archivo y se ejecuta.
-
-1. Descargar el archivo `BarberStudio-macOS.zip` o `BarberStudio-Windows.zip` desde la sección de Releases del repositorio en GitHub.
-2. Descomprimir el archivo descargado.
-3. Abrir la carpeta `BarberStudio` y ejecutar el archivo `BarberStudio`.
-4. En macOS, si el sistema bloquea la app por seguridad, ir a **Preferencias del Sistema → Seguridad y Privacidad** y permitir la ejecución.
-
-La primera vez que se abre el sistema, se crea automáticamente la base de datos con un usuario administrador por defecto.
+El sistema se puede usar de dos formas: descargando el ejecutable directamente o corriendo el código fuente con Python. La primera opción es para el cliente final y la segunda es para quien quiera revisar o modificar el código.
 
 ---
 
-## Opción 2 — Ejecutar desde el código fuente
+## Con el ejecutable (para usuarios finales)
 
-Esta opción es para desarrolladores que quieran modificar o estudiar el sistema.
+Esta es la forma más sencilla. No necesita instalar Python ni nada adicional.
 
-### Requisitos previos
+1. Descargar el archivo `BarberStudio-Windows.zip` o `BarberStudio-macOS.zip` desde la sección Releases del repositorio en GitHub
+2. Descomprimir el archivo
+3. Abrir la carpeta `BarberStudio` y ejecutar el programa
+4. En macOS puede que aparezca un aviso de seguridad la primera vez — hay que ir a **Preferencias del Sistema → Seguridad y Privacidad** y permitir la ejecución
 
+La primera vez que se abre el sistema se crea automáticamente la base de datos vacía y se puede registrar el primer usuario administrador.
+
+---
+
+## Desde el código fuente (para desarrolladores)
+
+### Requisitos
 - Python 3.11 o superior
-- Git instalado
-- pip (viene incluido con Python)
+- Git
+- pip
 
 ### Pasos
 
-**1. Clonar el repositorio**
-
+Clonar el repositorio:
 ```bash
-git clone https://github.com/CristianMarin19/imaginacms-iTasks
-cd ProyectoBarberia
+git clone https://github.com/exilio1/SistemaGestionCitasBarberia
+cd SistemaGestionCitasBarberia
 ```
 
-**2. Crear un entorno virtual**
-
+Crear y activar el entorno virtual:
 ```bash
 python -m venv venv
-```
 
-**3. Activar el entorno virtual**
-
-En macOS / Linux:
-```bash
+# macOS / Linux
 source venv/bin/activate
-```
 
-En Windows:
-```bash
+# Windows
 venv\Scripts\activate
 ```
 
-**4. Instalar las dependencias**
-
+Instalar dependencias:
 ```bash
 pip install -r requirements.txt
 ```
 
-**5. Ejecutar el sistema**
-
+Ejecutar:
 ```bash
 python -m app.main
 ```
 
 ---
 
-## Dependencias principales
+## Primera vez que se abre
 
-El archivo `requirements.txt` incluye todas las librerías necesarias. Las más importantes son:
+Al iniciar por primera vez el sistema crea la base de datos automáticamente en la carpeta `data/`. Desde la pantalla de inicio de sesión se puede registrar el usuario administrador usando el enlace "Registrarse".
 
-```
-customtkinter
-python-telegram-bot
-bcrypt
-reportlab
-pillow
-pyinstaller
-```
-
----
-
-## Primera ejecución
-
-Al abrir el sistema por primera vez se inicializa la base de datos SQLite automáticamente. Si es la primera vez que se usa, se puede registrar un usuario administrador desde la pantalla de inicio de sesión usando el botón "Registrarse".
-
-> **Nota:** la base de datos se guarda en la carpeta `data/` dentro del directorio del sistema. No eliminar esta carpeta porque contiene toda la información del negocio.
+> La carpeta `data/` no se debe borrar porque ahí está toda la información del negocio.

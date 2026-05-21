@@ -1,19 +1,18 @@
 # Arquitectura del Sistema
 
-Barbers Studio está construido siguiendo el patrón de diseño **Modelo-Vista-Controlador (MVC)**. Se eligió este patrón porque separa claramente las responsabilidades de cada parte del código, lo que hace más fácil hacer cambios sin romper otras funcionalidades.
+Para estructurar el proyecto usé el patrón **MVC (Modelo-Vista-Controlador)**. Lo elegí porque en clase lo habíamos visto y me pareció que era el que mejor se adaptaba a lo que necesitaba: separar la lógica del negocio de la interfaz gráfica para que cualquier cambio en una parte no dañara las demás.
+
+Al principio mezclar todo en un solo archivo me parecía más rápido, pero después de los primeros módulos me di cuenta de que era un error porque cada cambio pequeño rompía otras cosas. Ahí fue cuando reorganicé todo con MVC y el desarrollo se volvió mucho más manejable.
 
 ---
 
-## Patrón MVC aplicado
+## Las tres capas
 
-### Modelo
-Los modelos se encargan de toda la interacción con la base de datos. Cada entidad del negocio tiene su propio modelo: citas, clientes, empleados, pagos, facturas, gastos, servicios y usuarios. Los modelos no saben nada de la interfaz, solo trabajan con los datos.
+**Modelos:** se encargan de hablar con la base de datos. Cada tabla tiene su propio modelo (citas, clientes, empleados, pagos, etc.). Los modelos no saben nada de la interfaz, solo trabajan con los datos.
 
-### Vista
-Las vistas son las pantallas que ve el usuario. Están construidas con CustomTkinter y se cargan de forma dinámica usando `importlib`, lo que evita que el sistema cargue todos los módulos al inicio y hace que arranque más rápido.
+**Vistas:** son las pantallas que ve el usuario, construidas con CustomTkinter. Decidí cargarlas de forma dinámica con `importlib` para que el sistema no cargue todos los módulos al arrancar, solo los que el usuario va abriendo.
 
-### Controlador
-Los controladores conectan las vistas con los modelos. Reciben las acciones del usuario (un clic en un botón, por ejemplo), consultan o modifican los datos a través del modelo y actualizan la vista con el resultado.
+**Controladores:** conectan las vistas con los modelos. Reciben lo que hace el usuario, consultan o modifican los datos y le devuelven el resultado a la vista.
 
 ---
 
@@ -22,62 +21,37 @@ Los controladores conectan las vistas con los modelos. Reciben las acciones del 
 ```
 ProyectoBarberia/
 ├── app/
-│   ├── main.py                  # Punto de entrada del sistema
-│   ├── config.py                # Configuración general (rutas, constantes)
+│   ├── main.py              # Punto de entrada
+│   ├── config.py            # Rutas y configuración general
 │   ├── core/
-│   │   ├── auth.py              # Autenticación y permisos por rol
-│   │   ├── database.py          # Conexión a SQLite
-│   │   ├── schema.py            # Definición de tablas de la base de datos
-│   │   └── backup.py            # Respaldo automático de la base de datos
-│   ├── models/                  # Acceso a datos por entidad
+│   │   ├── auth.py          # Login y permisos por rol
+│   │   ├── database.py      # Conexión a SQLite
+│   │   ├── schema.py        # Definición de las tablas
+│   │   └── backup.py        # Respaldo automático de la BD
+│   ├── models/              # Un modelo por entidad
 │   ├── views/
-│   │   ├── login_view.py        # Pantalla de inicio de sesión
-│   │   ├── dashboard_view.py    # Contenedor principal con sidebar
-│   │   ├── components/          # Componentes reutilizables (sidebar, header, etc.)
-│   │   └── screens/             # Pantallas de cada módulo
-│   ├── controllers/             # Controladores de cada módulo
-│   ├── services/                # Lógica de negocio transversal
-│   └── bot/                     # Bot de Telegram
-├── data/                        # Base de datos SQLite (se crea al iniciar)
-├── docs/                        # Documentación del proyecto (esta carpeta)
-├── tests/                       # Pruebas automatizadas
-└── requirements.txt             # Dependencias del proyecto
+│   │   ├── login_view.py
+│   │   ├── dashboard_view.py
+│   │   ├── components/      # Sidebar, header, tooltips, etc.
+│   │   └── screens/         # Pantalla de cada módulo
+│   ├── controllers/         # Un controlador por módulo
+│   └── bot/                 # Bot de Telegram
+├── data/                    # Base de datos (se genera sola)
+├── docs/                    # Esta documentación
+├── tests/                   # Pruebas con pytest
+└── requirements.txt
 ```
 
 ---
 
-## Flujo de navegación
+## Flujo de la aplicación
 
-```
-main.py
-  └── App (CTk)
-        ├── LoginView + AuthController
-        │     └── RegistroView + RegistroController
-        └── DashboardView
-              ├── Sidebar (navegación por rol)
-              ├── Header (info del usuario y fecha)
-              └── Área de contenido (carga módulos dinámicamente)
-                    ├── PanelPrincipalView + PanelPrincipalController
-                    ├── AgendaView + AgendaController
-                    ├── FacturacionView + FacturacionController
-                    ├── ReportesView + ReportesController
-                    ├── EquipoView + EquipoController
-                    ├── ServiciosView + ServiciosController
-                    └── GastosView + GastosController
-```
+El sistema arranca en `main.py`, muestra el login, y al autenticarse carga el dashboard con el sidebar. Desde ahí, cada vez que el usuario navega a un módulo se carga dinámicamente su vista y su controlador.
 
 ---
 
-## Carga dinámica de módulos
+## Seguridad básica implementada
 
-Una decisión importante del diseño fue cargar los módulos con `importlib.import_module()` en lugar de importarlos todos al inicio. Esto significa que cuando el usuario abre el sistema solo se carga lo necesario para mostrar el login y el panel principal. Los demás módulos se cargan únicamente cuando el usuario navega a ellos.
+Las contraseñas se guardan cifradas con **bcrypt**, nunca en texto plano. El acceso a cada módulo está controlado por el rol del usuario, así que aunque alguien intente acceder directamente a un módulo que no le corresponde, el sistema lo bloquea.
 
-Esto reduce el tiempo de arranque del sistema y el consumo de memoria, especialmente cuando se empaqueta como ejecutable con PyInstaller.
-
----
-
-## Seguridad
-
-- Las contraseñas de los usuarios se almacenan cifradas con **bcrypt** (hash + salt), nunca en texto plano.
-- El acceso a cada módulo está controlado por un sistema de permisos basado en el rol del usuario (administrador o recepcionista).
-- La base de datos SQLite se guarda localmente y se respalda automáticamente en la carpeta `data/backups/`.
+La base de datos se respalda automáticamente cada vez que se abre el sistema, en la carpeta `data/backups/`.

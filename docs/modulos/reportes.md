@@ -1,52 +1,29 @@
-# Módulo de Reportes
+# Reportes
 
-El módulo de reportes está disponible únicamente para el administrador. Permite consultar el desempeño del negocio en diferentes períodos de tiempo y exportar la información en PDF.
+El módulo de reportes es solo para el administrador. Permite consultar el desempeño del negocio en un período de tiempo y exportar esa información en PDF.
 
----
-
-## Tipos de reporte
-
-### Reporte de ingresos
-Muestra el total de ingresos generados en el período seleccionado, desglosado por:
-- Ingresos totales del negocio
-- Ganancia del negocio (después de descontar los pagos a empleados)
-- Total pagado a empleados
-
-### Reporte por empleado
-Permite ver el rendimiento individual de cada barbero:
-- Número de citas atendidas
-- Total facturado por ese barbero
-- Ganancia que le corresponde al empleado
-- Ganancia que generó para el negocio
-
-### Reporte de servicios más solicitados
-Lista los servicios ordenados por cantidad de veces que fueron solicitados en el período, lo que ayuda a identificar qué servicios son más populares.
-
-### Reporte de gastos
-Muestra el total de gastos registrados en el período, agrupados por categoría.
+Decidí restringirlo al administrador porque los reportes muestran información financiera sensible como los ingresos totales, los márgenes de ganancia y lo que se le paga a cada empleado.
 
 ---
 
-## Filtros disponibles
+## Tipos de reporte disponibles
 
-- **Por período:** se puede elegir una fecha de inicio y una fecha de fin
-- **Por empleado:** filtrar los datos de un empleado específico
-- **Por servicio:** ver estadísticas de un servicio particular
+**Ingresos del período:** muestra el total recaudado, lo que quedó para el negocio y lo que se pagó a los empleados.
 
----
+**Por empleado:** cuántas citas atendió cada barbero, cuánto facturó y cuánto le corresponde. Útil para revisar el rendimiento del equipo.
 
-## Exportar reporte
+**Servicios más solicitados:** lista los servicios ordenados por cantidad de veces que se pidieron en el período. Sirve para saber qué ofrecer más.
 
-Cada reporte se puede exportar a PDF con el botón "Exportar PDF". El archivo generado incluye:
-- Encabezado con el nombre de la barbería
-- Período consultado
-- Tabla con todos los datos del reporte
-- Totales y resumen al final
-
-El PDF se guarda en la carpeta de documentos del sistema.
+**Gastos del período:** total de egresos agrupados por categoría.
 
 ---
 
-## ¿Por qué solo el administrador tiene acceso?
+## Filtros
 
-Los reportes contienen información financiera sensible del negocio como los ingresos, los márgenes de ganancia y los salarios de los empleados. Por eso se decidió restringir este módulo solo al administrador para que la información financiera no esté disponible para todos los usuarios del sistema.
+Se puede filtrar por rango de fechas, por empleado o por servicio según lo que se quiera consultar.
+
+---
+
+## Exportar a PDF
+
+Cada reporte tiene un botón para exportarlo a PDF. El archivo incluye el período consultado, la tabla con los datos y los totales al final.

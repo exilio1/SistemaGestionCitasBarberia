@@ -1,55 +1,34 @@
-# Módulo de Facturación
+# Facturación
 
-El módulo de facturación permite registrar los pagos de las citas completadas y generar facturas en formato PDF. También muestra una sección con los servicios que ya fueron finalizados pero que todavía no tienen pago registrado.
+Desde este módulo se registran los pagos de las citas y se generan las facturas en PDF. También tiene una sección que muestra los servicios que ya terminaron pero que todavía no tienen pago registrado, lo cual me pareció importante incluir porque en la práctica la recepcionista no siempre sabe cuáles citas cobrar sin ir a revisar la agenda.
 
 ---
 
-## Servicios pendientes de cobro
+## Servicios sin cobrar
 
-En la parte superior del módulo aparece una lista de citas que ya están en estado "completada" pero que aún no tienen un pago registrado. Esto es muy útil para que la recepcionista no tenga que ir a la agenda a buscar cuáles citas cobrar.
-
-Cada fila de la lista muestra:
-- Código de la cita
-- Nombre del cliente
-- Servicio realizado
-- Precio del servicio
-- Botón **"Cobrar"** que llena automáticamente el formulario de pago
+En la parte de arriba aparece una lista de citas completadas sin pago. Para cada una se muestra el código, el nombre del cliente, el servicio y el precio. El botón **"Cobrar"** llena automáticamente el formulario de pago con esos datos, así solo hay que elegir el método de pago y confirmar.
 
 ---
 
 ## Registrar un pago
 
-El formulario de registro de pago tiene los siguientes campos:
+El formulario tiene estos campos:
 
-- **Código de la cita:** se puede escribir manualmente o usar el botón "Cobrar" de la lista de pendientes
-- **Monto:** precio del servicio (se llena automáticamente al cargar la cita)
+- **Código de la cita:** se puede escribir o usar el botón "Cobrar" de la lista de arriba
+- **Monto:** se llena solo al cargar la cita
 - **Método de pago:** efectivo, tarjeta débito, tarjeta crédito, transferencia u otro
-- **Observaciones:** notas adicionales opcionales
+- **Observaciones:** opcional
 
-Al registrar el pago, el sistema calcula automáticamente:
-- La ganancia del empleado según el porcentaje configurado
-- La ganancia del negocio (lo que queda después del pago al barbero)
+Al guardar el pago el sistema calcula automáticamente cuánto le corresponde al barbero y cuánto queda para el negocio, según el porcentaje configurado para ese empleado.
 
 ---
 
 ## Generar factura
 
-Después de registrar un pago, el sistema ofrece la opción de generar una factura en PDF. La factura incluye:
-
-- Número de factura consecutivo
-- Datos de la barbería
-- Datos del cliente
-- Detalle del servicio realizado
-- Monto total y método de pago
-- Fecha de emisión
-
-El archivo PDF se guarda automáticamente y se puede imprimir o compartir directamente.
+Después de registrar el pago se puede generar la factura en PDF. El archivo incluye los datos del cliente, el servicio, el monto y la fecha. Los números de factura son consecutivos y se generan automáticamente.
 
 ---
 
 ## Indicadores del módulo
 
-En la parte superior se muestran tres indicadores rápidos:
-- Total recaudado en el día
-- Total recaudado en el mes
-- Número de facturas generadas en el período
+En la parte superior se muestran los totales del día y del mes para que la recepcionista tenga visibilidad de cuánto se ha recaudado sin tener que abrir el módulo de reportes.

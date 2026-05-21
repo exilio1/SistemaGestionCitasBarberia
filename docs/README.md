@@ -1,46 +1,44 @@
-# Barbers Studio — Sistema de Gestión de Citas para Barbería
+# Barbers Studio
 
-Barbers Studio es un sistema de escritorio desarrollado en Python para gestionar todo lo relacionado con el día a día de una barbería. La idea surgió porque muchas barberías pequeñas siguen manejando sus citas en libretas o por WhatsApp, lo que genera problemas de organización, pérdida de clientes y dificultad para llevar un control de los ingresos.
+Barbers Studio es el proyecto que desarrollé para el curso de proyecto integrador. Es un sistema de escritorio hecho en Python para que una barbería pueda gestionar sus citas, pagos y empleados desde un solo programa.
 
-El sistema permite que el administrador y la recepcionista puedan registrar citas, llevar el control de pagos, generar reportes y administrar al equipo de trabajo, todo desde una sola aplicación sin necesidad de conexión a internet.
+La idea surgió porque la barbería con la que trabajé como caso de estudio manejaba todo en una libreta y por WhatsApp, lo que generaba problemas constantemente: citas dobles, clientes que llegaban a una hora que no era, y no había forma de saber cuánto se estaba ingresando realmente.
 
 ---
 
-## ¿Para qué sirve?
+## ¿Qué puede hacer el sistema?
 
-- Registrar y gestionar citas de clientes con los barberos disponibles
-- Consultar la agenda del día organizada por hora y empleado
-- Registrar pagos y generar facturas de forma rápida
-- Ver reportes de ingresos, gastos y rendimiento por período
-- Administrar el equipo de trabajo y sus porcentajes de ganancia
-- Gestionar los servicios que ofrece la barbería con sus precios
+- Agendar y gestionar citas con los barberos
+- Ver la agenda del día como un calendario por columnas
+- Registrar pagos y generar facturas en PDF
+- Ver reportes de ingresos y gastos
+- Administrar el equipo de trabajo con sus porcentajes de ganancia
+- Gestionar los servicios que ofrece la barbería
 - Llevar un control de los gastos del negocio
-- Recibir solicitudes de citas a través de un bot de Telegram
+- Recibir solicitudes de citas por Telegram con un bot
 
 ---
 
-## Tecnologías usadas
+## Tecnologías que usé
 
-| Tecnología | Uso |
+| Tecnología | Para qué la usé |
 |---|---|
-| Python 3.12 | Lenguaje principal del sistema |
-| CustomTkinter | Interfaz gráfica de escritorio |
+| Python 3.12 | Lenguaje principal del proyecto |
+| CustomTkinter | Para construir la interfaz gráfica |
 | SQLite | Base de datos local del sistema |
-| python-telegram-bot | Bot para solicitudes por Telegram |
-| bcrypt | Cifrado de contraseñas |
-| ReportLab | Generación de PDFs (facturas y reportes) |
-| PyInstaller | Empaquetado del sistema como ejecutable |
+| python-telegram-bot | Para el bot de Telegram |
+| bcrypt | Para cifrar las contraseñas |
+| ReportLab | Para generar los PDFs de facturas |
+| PyInstaller | Para empaquetar el ejecutable final |
 
 ---
 
 ## Roles del sistema
 
-El sistema tiene dos tipos de usuario:
+Hay dos tipos de usuario. El **administrador** tiene acceso completo a todo, incluyendo reportes financieros y configuración del equipo. La **recepcionista** solo puede ver y gestionar la agenda y la facturación del día a día.
 
-**Administrador:** tiene acceso completo a todos los módulos, incluyendo reportes financieros, gestión de empleados, servicios y gastos.
-
-**Recepcionista:** puede gestionar citas, agenda y facturación, pero no tiene acceso a reportes ni configuración del equipo.
+Esto lo decidí así porque no tenía sentido que una recepcionista pudiera ver los reportes de ingresos y los sueldos de los empleados.
 
 ---
 
-> Proyecto desarrollado como parte del programa de Tecnología en Desarrollo de Software — Universidad Santiago de Cali.
+> Proyecto desarrollado en el programa de Tecnología en Desarrollo de Software — Universidad Santiago de Cali.

@@ -1,45 +1,27 @@
-# Módulo de Equipo y Empleados
+# Equipo y Empleados
 
-Desde este módulo el administrador puede ver y gestionar todo el equipo de trabajo de la barbería: los barberos, sus especialidades y el porcentaje de ganancia que les corresponde por cada servicio realizado.
+Desde acá el administrador gestiona los barberos del negocio: sus datos, su especialidad y el porcentaje de ganancia que les corresponde por cada servicio.
 
 ---
 
 ## Lista del equipo
 
-La pantalla principal muestra una tabla con todos los empleados activos del negocio. Para cada empleado se ve:
-- Nombre completo
-- Teléfono de contacto
-- Especialidad principal
-- Porcentaje de ganancia configurado
-- Estado (activo / inactivo)
+La pantalla muestra una tabla con todos los empleados activos. Se puede ver el nombre, teléfono, especialidad, porcentaje de ganancia y estado de cada uno.
 
 ---
 
 ## Agregar un empleado
 
-El botón **"Agregar empleado"** abre un formulario para registrar a un nuevo integrante del equipo. Los campos son:
-
-- **Nombre:** nombre completo del barbero
-- **Teléfono:** número de contacto
-- **Especialidad:** el tipo de servicio en que se especializa (corte de cabello, barba, coloración, etc.)
-- **Porcentaje de ganancia:** qué porcentaje del valor del servicio le corresponde al barbero. Por defecto es 60%, lo que significa que el 60% del cobro va para el empleado y el 40% queda para el negocio.
+El formulario pide nombre, teléfono, especialidad y porcentaje de ganancia. El porcentaje por defecto es 60%, lo que significa que el barbero se queda con el 60% del valor del servicio y el 40% queda para el negocio. Este valor se puede cambiar según el acuerdo con cada empleado.
 
 ---
 
-## Editar información de un empleado
+## Editar y desactivar
 
-Al hacer clic sobre cualquier empleado de la lista se puede editar su información. Todos los campos son modificables, incluyendo el porcentaje de ganancia si se negocia un acuerdo diferente con el barbero.
-
----
-
-## Desactivar un empleado
-
-Si un barbero ya no trabaja en la barbería se puede desactivar su cuenta en lugar de eliminarlo. Esto conserva el historial de todas las citas y pagos que tuvo ese empleado, lo cual es importante para los reportes financieros.
-
-Un empleado desactivado ya no aparece en el formulario de nueva cita ni en la agenda.
+Toda la información de un empleado se puede editar. Si un barbero deja de trabajar en la barbería se desactiva en lugar de eliminarlo, para conservar el historial de citas y pagos que tuvo. Un empleado desactivado no aparece en el formulario de nueva cita.
 
 ---
 
-## Gestión de usuarios del sistema
+## Usuarios del sistema
 
-Desde el módulo de equipo también se pueden crear y administrar los usuarios que tienen acceso al sistema (administradores y recepcionistas). Esto es independiente de los empleados (barberos), ya que no todos los barberos necesitan acceso al sistema de gestión.
+Desde este módulo también se administran los usuarios que pueden entrar al sistema (administradores y recepcionistas). Esto es independiente de los empleados porque no todos los barberos necesitan acceso al sistema de gestión.

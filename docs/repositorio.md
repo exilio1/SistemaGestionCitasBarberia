@@ -1,58 +1,40 @@
-# Repositorio del Proyecto
+# Repositorio
 
-El código fuente de Barbers Studio está disponible públicamente en GitHub.
+El código fuente del proyecto está disponible en GitHub.
+
+🔗 **https://github.com/exilio1/SistemaGestionCitasBarberia**
 
 ---
 
-## Repositorio principal
+## Qué hay en el repositorio
 
-🔗 **https://github.com/CristianMarin19/imaginacms-iTasks**
-
-El repositorio contiene:
-- Todo el código fuente del sistema (carpeta `app/`)
-- Los archivos de configuración de PyInstaller para el empaquetado
-- Las pruebas automatizadas (carpeta `tests/`)
-- Esta documentación (carpeta `docs/`)
+- Todo el código fuente en la carpeta `app/`
+- La configuración de PyInstaller para empaquetar el ejecutable (`barber_studio.spec`)
+- Las pruebas automatizadas en `tests/`
+- Esta documentación en `docs/`
 - El archivo `requirements.txt` con todas las dependencias
 
 ---
 
-## Ramas del repositorio
+## Ramas
 
 | Rama | Descripción |
 |---|---|
-| `main` | Versión estable del sistema. Solo se actualiza cuando hay una versión lista para producción. |
-| `develop` | Rama de desarrollo principal. Aquí se integran los cambios antes de pasar a main. |
-| `testing` | Rama para pruebas. Las pruebas automáticas se ejecutan al hacer push aquí. |
+| `main` | Versión estable. Solo se actualiza cuando hay algo listo para producción |
+| `develop` | Rama de desarrollo. Aquí se integran los cambios antes de pasar a main |
+| `testing` | Rama para pruebas. Las pruebas automáticas se ejecutan aquí |
 
 ---
 
-## Versiones publicadas
+## Versiones empaquetadas
 
-Las versiones empaquetadas del sistema (ejecutables para Windows y macOS) están disponibles en la sección **Releases** del repositorio en GitHub.
-
-Cada release incluye:
-- `BarberStudio-Windows.zip` — ejecutable para Windows
-- `BarberStudio-macOS.zip` — ejecutable para macOS
-
-El empaquetado se realiza automáticamente con GitHub Actions cuando se publica una nueva versión.
+Los ejecutables para Windows y macOS están en la sección **Releases** del repositorio. Se generan automáticamente con GitHub Actions cuando se publica una nueva versión.
 
 ---
 
 ## Integración continua
 
-El repositorio tiene configurados dos workflows de GitHub Actions:
+Hay dos workflows configurados en GitHub Actions:
 
-**pytest.yml:** se ejecuta automáticamente cada vez que se hace push a las ramas `develop` o `testing`. Corre todas las pruebas del sistema y notifica si alguna falla.
-
-**empaquetar.yml:** se activa manualmente cuando hay una nueva versión lista. Genera los ejecutables para Windows y macOS y los sube automáticamente como assets del release.
-
----
-
-## Cómo contribuir
-
-Si quieres proponer un cambio o reportar un error:
-1. Crear un fork del repositorio
-2. Crear una rama desde `develop` con un nombre descriptivo
-3. Hacer los cambios y crear un pull request hacia `develop`
-4. Describir qué cambió y por qué en la descripción del pull request
+- **pytest.yml:** corre las pruebas automáticamente con cada push a `develop` o `testing`
+- **empaquetar.yml:** genera los ejecutables para Windows y macOS cuando se activa manualmente al publicar una versión
