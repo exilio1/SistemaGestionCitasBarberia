@@ -2,7 +2,7 @@
 
 El código fuente del proyecto está disponible en GitHub.
 
-🔗 **https://github.com/exilio1/SistemaGestionCitasBarberia**
+**https://github.com/exilio1/SistemaGestionCitasBarberia**
 
 ---
 

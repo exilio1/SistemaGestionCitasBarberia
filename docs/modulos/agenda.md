@@ -9,11 +9,11 @@ La agenda fue el módulo que más tiempo me tomó desarrollar. Quería que se vi
 La pantalla muestra una cuadrícula donde cada columna es un barbero y cada fila es una hora del día. Las citas aparecen como tarjetas dentro de esa cuadrícula con el nombre del cliente, el servicio y el estado actual.
 
 Los colores de las tarjetas cambian según el estado:
-- 🟡 Pendiente
-- 🔵 Confirmada
-- 🟣 En curso
-- 🟢 Completada
-- 🔴 Cancelada
+- Pendiente
+- Confirmada
+- En curso
+- Completada
+- Cancelada
 
 También hay un selector de fecha para navegar entre días y un campo de búsqueda para encontrar citas por nombre del cliente o código.
 

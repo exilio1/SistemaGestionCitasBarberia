@@ -4,13 +4,13 @@ Barbers Studio está organizado en módulos independientes. Cada módulo se enca
 
 | Módulo | Administrador | Recepcionista |
 |---|---|---|
-| Panel Principal | ✅ | ✅ |
-| Agenda | ✅ | ✅ |
-| Facturación | ✅ | ✅ |
-| Reportes | ✅ | ❌ |
-| Equipo y Empleados | ✅ | ❌ |
-| Servicios | ✅ | ❌ |
-| Gastos | ✅ | ❌ |
-| Bot de Telegram | ✅ | ❌ |
+| Panel Principal | Sí | Sí |
+| Agenda | Sí | Sí |
+| Facturación | Sí | Sí |
+| Reportes | Sí | No |
+| Equipo y Empleados | Sí | No |
+| Servicios | Sí | No |
+| Gastos | Sí | No |
+| Bot de Telegram | Sí | No |
 
 Selecciona un módulo en el menú lateral para ver su documentación detallada.
