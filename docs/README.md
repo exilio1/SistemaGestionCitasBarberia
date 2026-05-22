@@ -1,8 +1,8 @@
 # Barbers Studio
 
-Barbers Studio es el proyecto que desarrollé para el curso de proyecto integrador. Es un sistema de escritorio hecho en Python para que una barbería pueda gestionar sus citas, pagos y empleados desde un solo programa.
+Barbers Studio es el proyecto que desarrollamos para el curso de proyecto integrador. Es un sistema de escritorio hecho en Python para que una barbería pueda gestionar sus citas, pagos y empleados desde un solo programa.
 
-La idea surgió porque la barbería con la que trabajé como caso de estudio manejaba todo en una libreta y por WhatsApp, lo que generaba problemas constantemente: citas dobles, clientes que llegaban a una hora que no era, y no había forma de saber cuánto se estaba ingresando realmente.
+La idea surgió porque la barbería con la que trabajamos como caso de estudio manejaba todo en una libreta y por WhatsApp, lo que generaba problemas constantemente: citas dobles, clientes que llegaban a una hora que no era, y no había forma de saber cuánto se estaba ingresando realmente.
 
 ---
 
