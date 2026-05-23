@@ -20,6 +20,7 @@ CREATE TABLE IF NOT EXISTS usuarios (
     rol             TEXT    NOT NULL CHECK(rol IN ('administrador','recepcionista')),
     telefono        TEXT,
     activo          INTEGER DEFAULT 1,
+    totp_secret     TEXT    DEFAULT NULL,
     fecha_creacion  TEXT    DEFAULT (date('now'))
 );
 
