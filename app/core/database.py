@@ -16,4 +16,9 @@ def init_db():
     from app.core import schema
     conn = get_connection()
     conn.executescript(schema.CREATE_TABLES)
+    # Migración: si la BD ya existía sin totp_secret se agrega sin borrar datos
+    cols = [r[1] for r in conn.execute("PRAGMA table_info(usuarios)").fetchall()]
+    if "totp_secret" not in cols:
+        conn.execute("ALTER TABLE usuarios ADD COLUMN totp_secret TEXT DEFAULT NULL")
+        conn.commit()
     conn.close()

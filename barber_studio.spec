@@ -59,6 +59,10 @@ modulos_ocultos = [
     'app.views.components.header',
     'app.views.components.tooltip',
     'app.views.components.calendario',
+    'app.views.components.popup_2fa',
+    'pyotp',
+    'qrcode',
+    'qrcode.image.pil',
 ]
 
 # Recopilo assets de customtkinter (temas, fuentes, imagenes)
