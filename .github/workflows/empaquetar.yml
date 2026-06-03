@@ -18,6 +18,7 @@ permissions:
 
 jobs:
   empaquetar:
+    timeout-minutes: 30
     strategy:
       fail-fast: false
       matrix:
@@ -37,9 +38,12 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: '3.11'
+          cache: 'pip'
 
       - name: instalar las librerias necesarias para empaquetar
-        run: pip install -r requirements.txt pyinstaller
+        run: |
+          pip install --upgrade pip
+          pip install customtkinter Pillow bcrypt python-dotenv python-telegram-bot httpx anyio certifi matplotlib reportlab openpyxl APScheduler requests pyotp "qrcode[pil]" pyinstaller
 
       # crea el archivo .env con el token del bot para que funcione al descargar
       - name: crear el archivo .env con la configuracion del bot
